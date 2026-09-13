@@ -1,0 +1,9 @@
+"use client";
+import { Activity, Check, ShieldCheck, Clock } from "lucide-react";
+import { useRehearsal } from "../../store/index.ts";
+import { Timeline } from "./timeline.tsx";
+export function ActivityPage() {
+    const s = useRehearsal();
+    const completed = s.history.filter(r => r.status === "completed");
+    return <div className="content-page"><div className="page-heading"><div><span className="eyebrow">A CLEAR RECORD</span><h1>Nothing happens quietly<span className="accent-text">.</span></h1><p>Observations, decisions, approvals, and confirmed results in one place.</p></div></div><div className="stats-grid"><div className="stat-card"><small><Activity size={14}/>Semantic events</small><strong>{s.timeline.filter(e => e.kind === "observed" || e.kind === "inferred").length}</strong></div><div className="stat-card"><small><Check size={14}/>Verified runs</small><strong>{completed.length}</strong></div><div className="stat-card"><small><ShieldCheck size={14}/>Human approvals</small><strong>{s.timeline.filter(e => e.kind === "approval").length}</strong></div><div className="stat-card"><small><Clock size={14}/>Estimated time saved</small><strong>{Math.round(completed.reduce((n, r) => n + r.metrics.estimatedSecondsSaved, 0) / 60)}<span>min</span></strong></div></div><section className="panel padded"><h2>Session timeline</h2><p className="muted">This audit trail is in memory for the current session. Refreshing clears it.</p><Timeline full/></section></div>;
+}

@@ -1,0 +1,52 @@
+name: Verify Rehearsal
+on:
+  push:
+    branches: [main, feature/rehearsal-complete]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      DEMO_MODE: 'true'
+      NEXT_PUBLIC_DEMO_MODE: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck 2>&1 | tee /tmp/rehearsal-typecheck.log
+      - run: npm run lint 2>&1 | tee /tmp/rehearsal-lint.log
+      - run: npm test 2>&1 | tee /tmp/rehearsal-tests.log
+      - run: npm run build 2>&1 | tee /tmp/rehearsal-build.log
+      - name: Install browser verification tools
+        run: |
+          npm install --no-save --package-lock=false playwright
+          npx playwright install --with-deps chromium
+      - name: Verify real browser flow
+        run: |
+          npm start -- --hostname 127.0.0.1 > /tmp/rehearsal-server.log 2>&1 &
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:3000/workspace > /dev/null && break; sleep 1; done
+          node scripts/verify-browser.mjs 2>&1 | tee /tmp/rehearsal-browser.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rehearsal-browser-checks
+          path: test-results/
+          if-no-files-found: ignore
+
+  optional-services:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install --prefix integrations/node-services --ignore-scripts
+      - run: npm test --prefix integrations/node-services

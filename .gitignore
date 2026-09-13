@@ -6,3 +6,12 @@
 *.tsbuildinfo
 .env*
 npm-debug.log*
+
+node_modules/
+.next-dev/
+.open-next/
+.wrangler/
+playwright-report/
+test-results/
+.env*
+!.env.example

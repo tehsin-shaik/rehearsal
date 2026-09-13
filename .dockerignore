@@ -1,0 +1,7 @@
+node_modules
+.next
+.next-dev
+.git
+.env*
+test-results
+integrations/node-services/node_modules

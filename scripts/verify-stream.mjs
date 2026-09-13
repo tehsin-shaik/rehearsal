@@ -1,0 +1,18 @@
+import assert from "node:assert/strict";
+import { RehearsalSession } from "../src/application/commands/session.ts";
+import { planningStream } from "../src/infrastructure/api-clients/stream.ts";
+const session = new RehearsalSession();
+session.instantObservation();
+session.instantObservation();
+session.activate();
+session.deliver();
+const run = session.getSnapshot().run;
+const response = planningStream(run, "verification-thread", "transport-run");
+const events = (await response.text()).trim().split("\n\n").map(line => JSON.parse(line.slice(6)));
+assert.equal(events[0].type, "RUN_STARTED");
+assert.equal(events[0].runId, "transport-run");
+assert.equal(events.at(-1).type, "RUN_FINISHED");
+assert.equal(events.filter(e => e.type === "TOOL_CALL_START" && e.toolCallName === "proposeAction").length, 5);
+assert.equal(events.filter(e => e.type === "TOOL_CALL_START" && e.toolCallName === "proposeRun").length, 1);
+assert.equal(session.getSnapshot().run.results.length, 0);
+console.log("PASS: AG-UI proposal stream is complete and produces zero effects. For the real CopilotKit SDK: npm test --prefix integrations/node-services.");
