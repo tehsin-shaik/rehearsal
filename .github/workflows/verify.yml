@@ -19,7 +19,13 @@ jobs:
         with:
           node-version: '24'
           cache: npm
+      - name: Refresh exact dependency lock
+        run: npm install --package-lock-only --ignore-scripts
       - run: npm ci
+      - name: Format source and export verification checkpoint
+        run: |
+          npx prettier --write src tests extension scripts docs *.json *.ts *.mjs .github/workflows/*.yml
+          node scripts/export-ci-checkpoint.mjs
       - run: npm run typecheck
       - run: npm run lint
       - run: npm test

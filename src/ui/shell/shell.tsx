@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { MotionConfig, motion } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
 import { LayoutDashboard, Workflow, Activity, ShieldCheck, Command, ArrowUpRight, Pause, Play, SlidersHorizontal, CircleHelp, Plug } from "lucide-react";
@@ -26,12 +27,12 @@ export function Shell({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
   const links = [{ href: "/workspace", label: "Workspace", icon: LayoutDashboard }, { href: "/workflows", label: "Workflows", icon: Workflow }, { href: "/activity", label: "Activity", icon: Activity }, { href: "/integrations", label: "Integrations", icon: Plug }, { href: "/privacy", label: "Privacy & controls", icon: ShieldCheck }];
-  return <div className="app-shell">
+  return <MotionConfig reducedMotion="user"><motion.div className="app-shell" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: .2 }}>
     <aside className="sidebar"><Link href="/" className="brand-link" aria-label="Rehearsal home"><Brand/></Link><div className="workspace-switch"><span className="workspace-initial">R</span><div><strong>My workspace</strong><small>Personal workspace</small></div><span className="ellipsis">⌄</span></div><div className="nav-label">WORKSPACE</div><nav aria-label="Main navigation">{links.map(({ href, label, icon: Icon }) => <Link key={href} href={href} className={`nav-item ${pathname.startsWith(href) ? "active" : ""}`}><Icon size={18}/>{label}{href === "/workflows" && s.pattern && <span className="nav-count">1</span>}</Link>)}</nav><div className="sidebar-bottom"><div className="demo-card"><span className="eyebrow">A SAFE PLACE TO LEARN</span><strong>Make yourself at home.</strong><p>Everything in this demo stays in your browser session.</p><Link href="/onboarding">How it works <ArrowUpRight size={14}/></Link></div><button className="nav-item" onClick={() => session.update({ demoOpen: true })}><SlidersHorizontal size={17}/>Demo controls <kbd>⇧ D</kbd></button><Link href="/onboarding" className="nav-item"><CircleHelp size={17}/>Quick guide</Link><div className="profile"><Avatar name="Tehsin Shaik" small/><div><strong>Your workspace</strong><small>Local reviewer</small></div><Badge tone="accent">Demo</Badge></div></div></aside>
     <div className="app-main"><header className="topbar"><div className="breadcrumb">Workspace <span>/</span> <strong>{links.find(l => pathname.startsWith(l.href))?.label ?? "Overview"}</strong></div><div className="topbar-actions"><span className="status-inline"><i className={s.paused ? "paused-dot" : "live-dot"}/>{s.paused ? "Observation paused" : "Observation enabled"}</span><button className="icon-button" onClick={() => perform(() => session.setPaused(!s.paused))} aria-label={s.paused ? "Resume observation" : "Pause observation"}>{s.paused ? <Play size={15}/> : <Pause size={15}/>}</button><span className="divider"/><button className="search-trigger" onClick={() => session.update({ commandOpen: true })}><Command size={14}/><span>Commands</span><kbd>⌘ K</kbd></button></div></header><main>{children}</main></div>
     {s.error && <div role="alert" className="toast"><strong>Action needs attention</strong><p>{s.error}</p><button className="text-button" onClick={() => session.update({ error: null })}>Dismiss</button></div>}
     {s.demoOpen && <DemoConsole/>}{s.commandOpen && <CommandPalette/>}
-  </div>;
+  </motion.div></MotionConfig>;
 }
 
 function DemoConsole() {

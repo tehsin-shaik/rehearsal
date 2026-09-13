@@ -17,14 +17,19 @@
     "verify:surfaces": "node --env-file-if-exists=.env.local scripts/verify-live.mjs surfaces",
     "verify:ambiguous": "node --env-file-if-exists=.env.local scripts/verify-live.mjs ambiguous",
     "verify:copilotkit": "node scripts/verify-stream.mjs",
-    "test:browser": "node scripts/verify-browser.mjs"
+    "test:browser": "node scripts/verify-browser.mjs",
+    "format": "prettier --write src tests extension scripts docs *.json *.ts *.mjs",
+    "format:check": "prettier --check src tests extension scripts docs *.json *.ts *.mjs"
   },
   "dependencies": {
     "next": "16.3.4",
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "zod": "3.25.76",
-    "lucide-react": "1.31.0"
+    "lucide-react": "1.31.0",
+    "zustand": "5.0.8",
+    "framer-motion": "12.23.24",
+    "@xyflow/react": "12.8.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "4.2.1",
@@ -34,7 +39,8 @@
     "eslint": "9.39.4",
     "eslint-config-next": "16.3.4",
     "tailwindcss": "4.2.1",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "prettier": "3.6.2"
   },
   "engines": {
     "node": ">=24.0.0"
