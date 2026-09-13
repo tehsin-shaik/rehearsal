@@ -17,7 +17,16 @@ export class SlackAdapter implements ExecutionAdapter {
     readonly name = "slack";
     readonly #env: Environment;
     readonly #client: HttpClient;
-    constructor(env: Environment, client: HttpClient = fetch) { this.#env = env; this.#client = client; }
-    async perform(action: PlannedAction) { const p = action.resolvedInput; const text = String(p.text) + (p.issueUrl ? `\n${p.issueUrl}` : ""); const response = await this.#client(slackWebhook(this.#env, String(p.channel)), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }), signal: AbortSignal.timeout(8000), redirect: "error" }); if (!response.ok || await response.text() !== "ok")
-        throw new IntegrationError("SLACK_NOT_CONFIRMED", "Slack did not confirm delivery."); return { status: "succeeded" as const, externalReference: `slack:${action.idempotencyKey}` }; }
+    constructor(env: Environment, client: HttpClient = fetch) {
+        this.#env = env;
+        this.#client = client;
+    }
+    async perform(action: PlannedAction) {
+        const p = action.resolvedInput;
+        const text = String(p.text) + (p.issueUrl ? `\n${p.issueUrl}` : "");
+        const response = await this.#client(slackWebhook(this.#env, String(p.channel)), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }), signal: AbortSignal.timeout(8000), redirect: "error" });
+        if (!response.ok || await response.text() !== "ok")
+            throw new IntegrationError("SLACK_NOT_CONFIRMED", "Slack did not confirm delivery.");
+        return { status: "succeeded" as const, externalReference: `slack:${action.idempotencyKey}` };
+    }
 }

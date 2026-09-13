@@ -26,19 +26,26 @@ export function Workspace() {
             oscillator.frequency.value = 660;
             oscillator.start();
             oscillator.stop(context.currentTime + .3);
-            oscillator.onended = () => { void context.close(); };
+            oscillator.onended = () => {
+                void context.close();
+            };
         }
         lastPhase.current = s.phase;
     }, [s.phase, s.sound]);
     const activeIndex = s.phase === "idle" || s.phase === "observing" ? 0 : s.phase === "comparing" || s.phase === "pattern_discovered" ? 1 : s.phase === "agent_ready" ? 2 : s.phase === "completed" ? 4 : 3;
     return <div className="workspace-page"><div className="page-heading"><div><span className="eyebrow">YOUR WORK, UNDERSTOOD</span><h1>Let good work repeat<span className="accent-text">.</span></h1><p>Teach a workflow once or twice. Rehearse the next run together.</p></div><div className="heading-actions"><Badge><span className="demo-dot"/>Offline demo</Badge><Link href="/onboarding" className="button secondary small">Quick tour <ArrowUpRight size={14}/></Link></div></div>
-    <div className="phase-rail" aria-label="Workflow progress">{[{ icon: Eye, name: "Observe", sub: `${s.traces.length}/2 examples` }, { icon: GitBranch, name: "Learn", sub: s.pattern ? "Pattern discovered" : "Find the pattern" }, { icon: Layers, name: "Prepare", sub: "Activate workflow" }, { icon: Ghost, name: "Rehearse", sub: "Review & approve" }, { icon: Check, name: "Automate", sub: "Verify every action" }].map((p, i) => <div className={`phase ${i === activeIndex ? "current" : ""} ${i < activeIndex ? "done" : ""}`} key={p.name}><span className="phase-icon">{i < activeIndex ? <Check size={16}/> : <p.icon size={17}/>}</span><div><strong>{p.name}</strong><small>{p.sub}</small></div>{i < 4 && <span className="phase-connector"/>}</div>)}</div>
+    {s.guide && <div className="phase-rail" aria-label="Workflow progress">{[{ icon: Eye, name: "Observe", sub: `${s.traces.length}/2 examples` }, { icon: GitBranch, name: "Learn", sub: s.pattern ? "Pattern discovered" : "Find the pattern" }, { icon: Layers, name: "Prepare", sub: "Activate workflow" }, { icon: Ghost, name: "Rehearse", sub: "Review & approve" }, { icon: Check, name: "Automate", sub: "Verify every action" }].map((p, i) => <div className={`phase ${i === activeIndex ? "current" : ""} ${i < activeIndex ? "done" : ""}`} key={p.name}><span className="phase-icon">{i < activeIndex ? <Check size={16}/> : <p.icon size={17}/>}</span><div><strong>{p.name}</strong><small>{p.sub}</small></div>{i < 4 && <span className="phase-connector"/>}</div>)}</div>}
     <ActionPanel />
     <div className="work-surfaces" style={{ minHeight: s.panelHeight, height: s.panelHeight }}><MailSurface /><TrackerSurface /><ChatSurface /></div>
-    <div className="resize-row"><label aria-label="Resize work surfaces"><GripHorizontal size={17}/><input aria-label="Workspace panel height" type="range" min={260} max={520} value={s.panelHeight} onChange={e => { const height = Number(e.target.value); session.update({ panelHeight: height }); try {
-        localStorage.setItem("rehearsal-panel-height", String(height));
-    }
-    catch { /* Optional preference. */ } }}/></label></div>
+    <div className="resize-row"><label aria-label="Resize work surfaces"><GripHorizontal size={17}/><input aria-label="Workspace panel height" type="range" min={260} max={520} value={s.panelHeight} onChange={e => {
+            const height = Number(e.target.value);
+            session.update({ panelHeight: height });
+            try {
+                localStorage.setItem("rehearsal-panel-height", String(height));
+            }
+            catch { /* Optional preference. */
+            }
+        }}/></label></div>
     <div className="inspection-grid"><section className="panel memory-panel"><header className="panel-title"><div><GitBranch size={16}/><strong>Workflow memory</strong><Badge tone="accent">{s.pattern ? `${s.pattern.variables.length} variables` : "Building"}</Badge></div><Link href="/workflows" aria-label="Inspect workflow memory"><ArrowUpRight size={16}/></Link></header><MemoryMap /></section><section className="panel timeline-panel"><header className="panel-title"><div><CircleDot size={16}/><strong>Live activity</strong><span className="tiny-live"/></div><Link href="/activity">View all <ArrowUpRight size={13}/></Link></header><Timeline /></section></div>
     <footer className="workspace-footer"><span><ShieldCheck size={14}/>You stay in control. Every external action needs your approval.</span><span>{s.activeTrace?.events.length ?? s.traces.reduce((n, t) => n + t.events.length, 0)} semantic events<span className="footer-dot">·</span>{s.pattern ? "1 learned workflow" : "Learning from your work"}</span></footer><GhostRun />
   </div>;
@@ -121,4 +128,6 @@ function ChatSurface() {
 }
 function SurfaceAction({ label }: {
     label: string;
-}) { return <button className="surface-action" onClick={() => perform(() => session.manualNext())}><Play size={13}/>{label}<ArrowRight size={14}/></button>; }
+}) {
+    return <button className="surface-action" onClick={() => perform(() => session.manualNext())}><Play size={13}/>{label}<ArrowRight size={14}/></button>;
+}

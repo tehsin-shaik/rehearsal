@@ -14,10 +14,14 @@ const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] }
 const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
 const errors = [], external = [];
 page.on('pageerror', e => errors.push(e.message));
-await page.route('**/*', route => { const url = new URL(route.request().url()); if (url.origin !== new URL(base).origin) {
-    external.push(url.origin);
-    return route.abort();
-} return route.continue(); });
+await page.route('**/*', route => {
+    const url = new URL(route.request().url());
+    if (url.origin !== new URL(base).origin) {
+        external.push(url.origin);
+        return route.abort();
+    }
+    return route.continue();
+});
 await mkdir('test-results', { recursive: true });
 try {
     await page.goto(base + '/workspace');

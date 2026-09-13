@@ -10,6 +10,9 @@ export function planningEvents(run: AgentRun, threadId: string, streamRunId = ru
 export function planningStream(run: AgentRun, threadId: string, streamRunId = run.id): Response {
     const encoder = new TextEncoder();
     const events = planningEvents(run, threadId, streamRunId);
-    return new Response(new ReadableStream({ start(controller) { for (const event of events)
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`)); controller.close(); } }), { headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-cache, no-transform", "X-Accel-Buffering": "no" } });
+    return new Response(new ReadableStream({ start(controller) {
+            for (const event of events)
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
+            controller.close();
+        } }), { headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-cache, no-transform", "X-Accel-Buffering": "no" } });
 }

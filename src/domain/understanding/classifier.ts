@@ -27,7 +27,10 @@ const RULES: readonly Rule[] = [
 ];
 export function understandReport(report: Report): IssueUnderstanding {
     const source = `${report.subject}\n${report.body}`;
-    const matches = RULES.flatMap(rule => { const match = source.match(rule.pattern); return match ? [{ rule, excerpt: match[0] }] : []; });
+    const matches = RULES.flatMap(rule => {
+        const match = source.match(rule.pattern);
+        return match ? [{ rule, excerpt: match[0] }] : [];
+    });
     const departments = new Set(matches.map(m => m.rule.department));
     const match = departments.size === 1 ? matches[0] : undefined;
     const name = report.senderName ?? report.body.match(/^Customer:\s*(.+)$/m)?.[1]?.trim() ?? null;

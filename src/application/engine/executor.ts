@@ -9,8 +9,12 @@ export class RunExecutor {
     readonly #adapters: ExecutionAdapters;
     readonly #inflight = new Map<string, Promise<AgentRun>>();
     readonly #latest = new Map<string, AgentRun>();
-    constructor(adapters: ExecutionAdapters) { this.#adapters = adapters; }
-    isRunning(runId: string): boolean { return this.#inflight.has(runId); }
+    constructor(adapters: ExecutionAdapters) {
+        this.#adapters = adapters;
+    }
+    isRunning(runId: string): boolean {
+        return this.#inflight.has(runId);
+    }
     execute(input: AgentRun, onProgress?: (run: AgentRun) => void, limit = Infinity): Promise<AgentRun> {
         if (input.status === "needs_review")
             return Promise.resolve(input);
@@ -35,7 +39,10 @@ export class RunExecutor {
     }
     async #execute(input: AgentRun, onProgress?: (run: AgentRun) => void, limit = Infinity): Promise<AgentRun> {
         let run: AgentRun = { ...input, status: "executing" };
-        const publish = () => { this.#latest.set(run.id, run); onProgress?.(run); };
+        const publish = () => {
+            this.#latest.set(run.id, run);
+            onProgress?.(run);
+        };
         publish();
         let attempted = 0;
         for (let index = 0; index < run.plannedActions.length; index++) {

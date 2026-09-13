@@ -27,15 +27,29 @@ const globalState = globalThis as typeof globalThis & {
     rehearsalServer?: Map<string, ServerSession>;
 };
 const sessions = globalState.rehearsalServer ??= new Map();
-export function createSession(env: Environment): ServerSession { for (const [id, session] of sessions)
-    if (session.expiresAt < Date.now())
-        sessions.delete(id); if (sessions.size >= 100)
-    throw new Error("Too many sessions. Restart the local server."); const id = randomBytes(32).toString("hex"), mail = new GmailAdapter(env); const s: ServerSession = { id, expiresAt: Date.now() + 8 * 3600000, runs: new Map(), patterns: new Map(), mail, executor: new RunExecutor({ tracker: new IdempotentAdapter(new TrackerAdapter(env)), messaging: new IdempotentAdapter(new SlackAdapter(env)), mail: new IdempotentAdapter(mail) }), observation: [], sequence: 0 }; sessions.set(id, s); return s; }
-export function validAccessKey(candidate: string | undefined | null, env: Environment): boolean { if (!candidate || !env.REHEARSAL_ACCESS_KEY || env.REHEARSAL_ACCESS_KEY.length < 24)
-    return false; const a = Buffer.from(candidate), b = Buffer.from(env.REHEARSAL_ACCESS_KEY); return a.length === b.length && timingSafeEqual(a, b); }
+export function createSession(env: Environment): ServerSession {
+    for (const [id, session] of sessions)
+        if (session.expiresAt < Date.now())
+            sessions.delete(id);
+    if (sessions.size >= 100)
+        throw new Error("Too many sessions. Restart the local server.");
+    const id = randomBytes(32).toString("hex"), mail = new GmailAdapter(env);
+    const s: ServerSession = { id, expiresAt: Date.now() + 8 * 3600000, runs: new Map(), patterns: new Map(), mail, executor: new RunExecutor({ tracker: new IdempotentAdapter(new TrackerAdapter(env)), messaging: new IdempotentAdapter(new SlackAdapter(env)), mail: new IdempotentAdapter(mail) }), observation: [], sequence: 0 };
+    sessions.set(id, s);
+    return s;
+}
+export function validAccessKey(candidate: string | undefined | null, env: Environment): boolean {
+    if (!candidate || !env.REHEARSAL_ACCESS_KEY || env.REHEARSAL_ACCESS_KEY.length < 24)
+        return false;
+    const a = Buffer.from(candidate), b = Buffer.from(env.REHEARSAL_ACCESS_KEY);
+    return a.length === b.length && timingSafeEqual(a, b);
+}
 export class ApiError extends Error {
     readonly status: number;
-    constructor(status: number, message: string) { super(message); this.status = status; }
+    constructor(status: number, message: string) {
+        super(message);
+        this.status = status;
+    }
 }
 export function requireSession(request: Request, env = environment()): ServerSession {
     if (isDemo(env))
@@ -67,21 +81,28 @@ export function validateOrigin(request: Request, env = environment()): void {
     if (origin !== configured && origin !== `chrome-extension://${env.EXTENSION_ID}`)
         throw new ApiError(403, "This origin is not authorized.");
 }
-export async function apiBoundary(fn: () => Promise<Response>): Promise<Response> { try {
-    return await fn();
+export async function apiBoundary(fn: () => Promise<Response>): Promise<Response> {
+    try {
+        return await fn();
+    }
+    catch (e) {
+        if (e instanceof ApiError)
+            return Response.json({ error: e.message }, { status: e.status });
+        if (e instanceof Error && e.name === "ZodError")
+            return Response.json({ error: "Invalid request schema." }, { status: 400 });
+        return Response.json({ error: "The request could not be completed. Check server configuration and integration access." }, { status: 500 });
+    }
 }
-catch (e) {
-    if (e instanceof ApiError)
-        return Response.json({ error: e.message }, { status: e.status });
-    if (e instanceof Error && e.name === "ZodError")
-        return Response.json({ error: "Invalid request schema." }, { status: 400 });
-    return Response.json({ error: "The request could not be completed. Check server configuration and integration access." }, { status: 500 });
-} }
-export async function requestBody(request: Request): Promise<unknown> { if (Number(request.headers.get("content-length") ?? 0) > 65000)
-    throw new ApiError(413, "Request is too large."); const text = await request.text(); if (text.length > 65000)
-    throw new ApiError(413, "Request is too large."); try {
-    return JSON.parse(text);
+export async function requestBody(request: Request): Promise<unknown> {
+    if (Number(request.headers.get("content-length") ?? 0) > 65000)
+        throw new ApiError(413, "Request is too large.");
+    const text = await request.text();
+    if (text.length > 65000)
+        throw new ApiError(413, "Request is too large.");
+    try {
+        return JSON.parse(text);
+    }
+    catch {
+        throw new ApiError(400, "A valid JSON body is required.");
+    }
 }
-catch {
-    throw new ApiError(400, "A valid JSON body is required.");
-} }

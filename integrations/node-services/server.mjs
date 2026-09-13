@@ -74,7 +74,10 @@ export function createBridge(env = process.env, mail = mailServices(env)) {
         throw new Error("Optional services require a local Rehearsal app.");
     const runtimes = new Map();
     return createServer(async (req, res) => {
-        const json = (status, data) => { res.writeHead(status, { "Content-Type": "application/json", "Cache-Control": "no-store" }); res.end(JSON.stringify(data)); };
+        const json = (status, data) => {
+            res.writeHead(status, { "Content-Type": "application/json", "Cache-Control": "no-store" });
+            res.end(JSON.stringify(data));
+        };
         if (!authorized(req.headers["x-rehearsal-bridge"], env.REHEARSAL_BRIDGE_KEY))
             return json(401, { error: "Bridge authentication required." });
         try {

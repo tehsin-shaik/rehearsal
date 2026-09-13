@@ -21,9 +21,14 @@ export function environment(input: Record<string, string | undefined> = process.
         throw new Error("DEMO_MODE and NEXT_PUBLIC_DEMO_MODE must agree.");
     return env;
 }
-export function isDemo(env = environment()): boolean { return env.DEMO_MODE !== "false"; }
-export function jsonMap(value: string | undefined): Record<string, string> { if (!value)
-    return {}; return z.record(z.string(), z.string()).parse(JSON.parse(value)); }
+export function isDemo(env = environment()): boolean {
+    return env.DEMO_MODE !== "false";
+}
+export function jsonMap(value: string | undefined): Record<string, string> {
+    if (!value)
+        return {};
+    return z.record(z.string(), z.string()).parse(JSON.parse(value));
+}
 export function selectedTracker(env: Environment): "github" | "clickup" | "jira" | "ambiguous" | null {
     if (env.TRACKER)
         return env.TRACKER;

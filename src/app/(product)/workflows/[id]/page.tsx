@@ -4,5 +4,8 @@ export default async function Page({ params }: {
     params: Promise<{
         id: string;
     }>;
-}) { if ((await params).id !== "support-triage")
-    notFound(); return <Workflows detail/>; }
+}) {
+    if ((await params).id !== "support-triage")
+        notFound();
+    return <Workflows detail/>;
+}

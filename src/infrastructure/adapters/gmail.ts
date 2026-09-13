@@ -18,10 +18,18 @@ export class GmailAdapter implements ExecutionAdapter {
     readonly #env: Environment;
     readonly #client: HttpClient;
     #tokens: GoogleTokens | null = null;
-    constructor(env: Environment, client: HttpClient = fetch) { this.#env = env; this.#client = client; }
-    setTokens(tokens: GoogleTokens): void { this.#tokens = tokens; }
-    get canSend(): boolean { if (this.#env.GMAIL_APP_PASSWORD)
-        return this.#env.GMAIL_SEND_ENABLED === "true"; return this.#tokens?.scope.split(" ").includes("https://www.googleapis.com/auth/gmail.send") ?? false; }
+    constructor(env: Environment, client: HttpClient = fetch) {
+        this.#env = env;
+        this.#client = client;
+    }
+    setTokens(tokens: GoogleTokens): void {
+        this.#tokens = tokens;
+    }
+    get canSend(): boolean {
+        if (this.#env.GMAIL_APP_PASSWORD)
+            return this.#env.GMAIL_SEND_ENABLED === "true";
+        return this.#tokens?.scope.split(" ").includes("https://www.googleapis.com/auth/gmail.send") ?? false;
+    }
     async exchange(code: string): Promise<GoogleTokens> {
         const env = this.#env;
         const raw = await requestJson("https://oauth2.googleapis.com/token", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ code, client_id: env.GOOGLE_CLIENT_ID ?? "", client_secret: env.GOOGLE_CLIENT_SECRET ?? "", redirect_uri: env.GOOGLE_REDIRECT_URI, grant_type: "authorization_code" }).toString() }, this.#client);
@@ -92,5 +100,8 @@ type MailPart = {
 };
 const partSchema: z.ZodType<MailPart> = z.lazy(() => z.object({ mimeType: z.string().optional(), body: z.object({ data: z.string().optional() }).optional(), parts: z.array(partSchema).optional(), headers: z.array(z.object({ name: z.string(), value: z.string() })).optional() }));
 const gmailMessageSchema = z.object({ internalDate: z.string(), labelIds: z.array(z.string()).optional(), payload: partSchema });
-function plainBody(part: MailPart): string { if (part.mimeType === "text/plain" && part.body?.data)
-    return Buffer.from(part.body.data, "base64url").toString("utf8"); return (part.parts ?? []).map(plainBody).filter(Boolean).join("\n"); }
+function plainBody(part: MailPart): string {
+    if (part.mimeType === "text/plain" && part.body?.data)
+        return Buffer.from(part.body.data, "base64url").toString("utf8");
+    return (part.parts ?? []).map(plainBody).filter(Boolean).join("\n");
+}

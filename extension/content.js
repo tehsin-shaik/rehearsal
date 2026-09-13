@@ -1,18 +1,26 @@
 (() => {
     let lastReport = '', pendingCreate = false, pendingReply = false, pendingSlack = false, lastIssue = '';
     let enabled = false;
-    const emit = (sourceApplication, action, payload) => { if (!enabled || document.querySelector('input[type="password"]'))
-        return; void chrome.runtime.sendMessage({ type: 'EVENT', sourceApplication, action, payload }).catch(() => { }); };
+    const emit = (sourceApplication, action, payload) => {
+        if (!enabled || document.querySelector('input[type="password"]'))
+            return;
+        void chrome.runtime.sendMessage({ type: 'EVENT', sourceApplication, action, payload }).catch(() => {
+        });
+    };
     const safeField = element => element && !['password', 'hidden'].includes(element.type) && !/password|secret|token|otp|pin|credit|card|cc-|one-time-code/i.test([element.name, element.autocomplete, element.getAttribute('aria-label')].join(' '));
-    const poll = async () => { try {
-        const s = await chrome.runtime.sendMessage({ type: 'STATUS' });
-        enabled = !!s.enabled;
-    }
-    catch {
-        enabled = false;
-    } };
+    const poll = async () => {
+        try {
+            const s = await chrome.runtime.sendMessage({ type: 'STATUS' });
+            enabled = !!s.enabled;
+        }
+        catch {
+            enabled = false;
+        }
+    };
     void poll();
-    setInterval(() => { void poll(); }, 5000);
+    setInterval(() => {
+        void poll();
+    }, 5000);
     const host = location.hostname;
     const observe = () => {
         if (!enabled || document.querySelector('input[type="password"]'))
@@ -54,20 +62,37 @@
             }
         }
     };
-    document.addEventListener('click', event => { if (!enabled || document.querySelector('input[type="password"]'))
-        return; const button = event.target.closest('button,[role="button"]'); if (!button)
-        return; const label = (button.getAttribute('aria-label') ?? button.getAttribute('data-tooltip') ?? button.textContent ?? '').trim(); if (host.endsWith('.atlassian.net') || host === 'app.clickup.com') {
-        if (/^create(?: issue| task)?$/i.test(label) && button.closest('[role="dialog"]'))
-            pendingCreate = true;
-    } if (host === 'mail.google.com' && /^send\b/i.test(label))
-        pendingReply = true; if (host === 'app.slack.com' && /^send now|^send message/i.test(label)) {
-        pendingSlack = [...document.querySelectorAll('[data-message-id]')].at(-1)?.getAttribute('data-message-id') ?? 'pending';
-    } }, true);
-    document.addEventListener('change', event => { if (!enabled || !safeField(event.target) || !host.endsWith('.atlassian.net'))
-        return; const field = event.target; const label = field.getAttribute('aria-label') ?? field.name ?? ''; if (/priority/i.test(label))
-        emit('issue_tracker', 'classify_report', { severity: field.selectedOptions?.[0]?.textContent ?? field.value }); if (/assignee/i.test(label))
-        emit('issue_tracker', 'assign_owner', { owner: field.selectedOptions?.[0]?.textContent ?? field.value, issueId: lastIssue }); }, true);
+    document.addEventListener('click', event => {
+        if (!enabled || document.querySelector('input[type="password"]'))
+            return;
+        const button = event.target.closest('button,[role="button"]');
+        if (!button)
+            return;
+        const label = (button.getAttribute('aria-label') ?? button.getAttribute('data-tooltip') ?? button.textContent ?? '').trim();
+        if (host.endsWith('.atlassian.net') || host === 'app.clickup.com') {
+            if (/^create(?: issue| task)?$/i.test(label) && button.closest('[role="dialog"]'))
+                pendingCreate = true;
+        }
+        if (host === 'mail.google.com' && /^send\b/i.test(label))
+            pendingReply = true;
+        if (host === 'app.slack.com' && /^send now|^send message/i.test(label)) {
+            pendingSlack = [...document.querySelectorAll('[data-message-id]')].at(-1)?.getAttribute('data-message-id') ?? 'pending';
+        }
+    }, true);
+    document.addEventListener('change', event => {
+        if (!enabled || !safeField(event.target) || !host.endsWith('.atlassian.net'))
+            return;
+        const field = event.target;
+        const label = field.getAttribute('aria-label') ?? field.name ?? '';
+        if (/priority/i.test(label))
+            emit('issue_tracker', 'classify_report', { severity: field.selectedOptions?.[0]?.textContent ?? field.value });
+        if (/assignee/i.test(label))
+            emit('issue_tracker', 'assign_owner', { owner: field.selectedOptions?.[0]?.textContent ?? field.value, issueId: lastIssue });
+    }, true);
     let timer;
-    new MutationObserver(() => { clearTimeout(timer); timer = setTimeout(observe, 350); }).observe(document.documentElement, { childList: true, subtree: true });
+    new MutationObserver(() => {
+        clearTimeout(timer);
+        timer = setTimeout(observe, 350);
+    }).observe(document.documentElement, { childList: true, subtree: true });
     setInterval(observe, 3000);
 })();

@@ -14,4 +14,6 @@ export function executeRun(run: AgentRun, options?: {
         memory.failOnce(options.failOnAction);
     return executor.execute(run);
 }
-export function resumeRun(run: AgentRun): Promise<AgentRun> { return executor.execute(run); }
+export function resumeRun(run: AgentRun): Promise<AgentRun> {
+    return executor.execute(run);
+}

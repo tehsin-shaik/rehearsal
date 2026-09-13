@@ -28,14 +28,27 @@ export class RehearsalSession {
     #executing = false;
     #handledReports = new Set<string>();
     getSnapshot = (): SessionState => this.#state;
-    subscribe = (fn: () => void) => { this.#listeners.add(fn); return () => { this.#listeners.delete(fn); }; };
-    update(values: Partial<SessionState>): void { this.#state = { ...this.#state, ...values }; this.#listeners.forEach(fn => fn()); }
-    #phase(phase: Phase): void { this.update({ phase: transition(this.#state.phase, phase) }); }
+    subscribe = (fn: () => void) => {
+        this.#listeners.add(fn);
+        return () => {
+            this.#listeners.delete(fn);
+        };
+    };
+    update(values: Partial<SessionState>): void {
+        this.#state = { ...this.#state, ...values };
+        this.#listeners.forEach(fn => fn());
+    }
+    #phase(phase: Phase): void {
+        this.update({ phase: transition(this.#state.phase, phase) });
+    }
     #log(kind: TimelineEntry["kind"], title: string, detail = ""): void {
         this.update({ timeline: [...this.#state.timeline.slice(-499), { id: `entry-${++this.#clock}`, timestamp: new Date().toISOString(), kind, title, detail }] });
     }
-    selectReport(id: string): void { if (this.#state.manualStep >= 0 && id !== this.#state.selectedReportId)
-        return; this.update({ selectedReportId: id }); }
+    selectReport(id: string): void {
+        if (this.#state.manualStep >= 0 && id !== this.#state.selectedReportId)
+            return;
+        this.update({ selectedReportId: id });
+    }
     startObservation(): void {
         if (this.#state.paused)
             throw new Error("Resume observation first.");
@@ -109,8 +122,11 @@ export class RehearsalSession {
         }
         this.update({ manualStep: step + 1 });
     }
-    instantObservation(): void { this.startObservation(); for (let i = 0; i < MANUAL_STEPS.length; i++)
-        this.manualNext(); }
+    instantObservation(): void {
+        this.startObservation();
+        for (let i = 0; i < MANUAL_STEPS.length; i++)
+            this.manualNext();
+    }
     activate(): void {
         if (!this.#state.pattern)
             throw new Error("Observe two completed examples first.");
@@ -118,11 +134,16 @@ export class RehearsalSession {
         this.#phase("agent_ready");
         this.#log("approval", "Workflow activated", "New reports can be planned. Every run still requires its own approval.");
     }
-    pauseWorkflow(): void { if (this.#executing)
-        return; if (this.#state.pattern)
-        this.update({ pattern: { ...this.#state.pattern, status: "proposed" } }); }
-    reactivateWorkflow(): void { if (this.#state.pattern)
-        this.update({ pattern: { ...this.#state.pattern, status: "active" } }); }
+    pauseWorkflow(): void {
+        if (this.#executing)
+            return;
+        if (this.#state.pattern)
+            this.update({ pattern: { ...this.#state.pattern, status: "proposed" } });
+    }
+    reactivateWorkflow(): void {
+        if (this.#state.pattern)
+            this.update({ pattern: { ...this.#state.pattern, status: "active" } });
+    }
     deliver(ambiguous = false): void {
         if (this.#state.pattern?.status !== "active")
             throw new Error("Activate the learned workflow first.");
@@ -175,20 +196,52 @@ export class RehearsalSession {
             this.#executing = false;
         }
     }
-    cancel(): void { if (!this.#state.run || this.#executing)
-        return; const run = { ...this.#state.run, status: "cancelled" as const }; if (!run.results.some(r => r.status === "succeeded" && r.externalReference))
-        this.#handledReports.delete(run.triggerReportId); this.update({ run, ghostOpen: false, history: [...this.#state.history.filter(r => r.id !== run.id), run] }); this.#phase("cancelled"); this.#log("decision", "Run cancelled", "No further actions will execute."); }
-    failOnce(action: PlannedAction["action"]): void { this.#memory.failOnce(action); this.#log("decision", "Demo failure armed", action.replaceAll("_", " ")); }
-    setPaused(paused: boolean): void { this.update({ paused }); if (paused)
-        this.#builder?.pause();
-    else
-        this.#builder?.resume(); this.#log("decision", paused ? "Observation paused" : "Observation resumed"); }
-    setExcluded(app: SourceApplication, excluded: boolean): void { if (this.#builder)
-        throw new Error("Finish the current observation before changing sources."); this.update({ excludedApps: excluded ? [...new Set([...this.#state.excludedApps, app])] : this.#state.excludedApps.filter(a => a !== app) }); }
-    clearHistory(): void { if (this.#executing)
-        return; this.update({ timeline: [], history: [] }); }
-    forget(): void { if (this.#executing)
-        return; this.#builder = null; this.update({ ...initialEngine(), manualStep: -1, ghostOpen: false }); }
-    reset(): void { if (this.#executing)
-        return; this.#builder = null; this.#memory = new MemoryAdapters(1045); this.#executor = new RunExecutor(this.#memory); this.#clock = 0; this.#handledReports.clear(); this.update(initialState()); }
+    cancel(): void {
+        if (!this.#state.run || this.#executing)
+            return;
+        const run = { ...this.#state.run, status: "cancelled" as const };
+        if (!run.results.some(r => r.status === "succeeded" && r.externalReference))
+            this.#handledReports.delete(run.triggerReportId);
+        this.update({ run, ghostOpen: false, history: [...this.#state.history.filter(r => r.id !== run.id), run] });
+        this.#phase("cancelled");
+        this.#log("decision", "Run cancelled", "No further actions will execute.");
+    }
+    failOnce(action: PlannedAction["action"]): void {
+        this.#memory.failOnce(action);
+        this.#log("decision", "Demo failure armed", action.replaceAll("_", " "));
+    }
+    setPaused(paused: boolean): void {
+        this.update({ paused });
+        if (paused)
+            this.#builder?.pause();
+        else
+            this.#builder?.resume();
+        this.#log("decision", paused ? "Observation paused" : "Observation resumed");
+    }
+    setExcluded(app: SourceApplication, excluded: boolean): void {
+        if (this.#builder)
+            throw new Error("Finish the current observation before changing sources.");
+        this.update({ excludedApps: excluded ? [...new Set([...this.#state.excludedApps, app])] : this.#state.excludedApps.filter(a => a !== app) });
+    }
+    clearHistory(): void {
+        if (this.#executing)
+            return;
+        this.update({ timeline: [], history: [] });
+    }
+    forget(): void {
+        if (this.#executing)
+            return;
+        this.#builder = null;
+        this.update({ ...initialEngine(), manualStep: -1, ghostOpen: false });
+    }
+    reset(): void {
+        if (this.#executing)
+            return;
+        this.#builder = null;
+        this.#memory = new MemoryAdapters(1045);
+        this.#executor = new RunExecutor(this.#memory);
+        this.#clock = 0;
+        this.#handledReports.clear();
+        this.update(initialState());
+    }
 }

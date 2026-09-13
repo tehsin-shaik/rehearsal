@@ -4,7 +4,9 @@ import type { ActionResult } from "../../domain/runs/action-result.ts";
 export class MemoryAdapters implements ExecutionAdapters {
     readonly issues: TrackerIssue[] = [];
     #nextIssue: number;
-    constructor(firstIssue = 1043) { this.#nextIssue = firstIssue; }
+    constructor(firstIssue = 1043) {
+        this.#nextIssue = firstIssue;
+    }
     readonly messages: ChatMessage[] = [];
     readonly replies: CustomerReply[] = [];
     readonly #receipts = new Map<string, Awaited<ReturnType<ExecutionAdapter["perform"]>>>();
@@ -12,8 +14,12 @@ export class MemoryAdapters implements ExecutionAdapters {
     tracker: ExecutionAdapter = { name: "demo-tracker", perform: a => this.perform(a) };
     messaging: ExecutionAdapter = { name: "demo-chat", perform: a => this.perform(a) };
     mail: ExecutionAdapter = { name: "demo-mail", perform: a => this.perform(a) };
-    reserveIssueNumber(number: number): void { this.#nextIssue = Math.max(this.#nextIssue, number + 1); }
-    failOnce(action: PlannedAction["action"]): void { this.#failure = action; }
+    reserveIssueNumber(number: number): void {
+        this.#nextIssue = Math.max(this.#nextIssue, number + 1);
+    }
+    failOnce(action: PlannedAction["action"]): void {
+        this.#failure = action;
+    }
     async perform(action: PlannedAction): Promise<Pick<ActionResult, "status" | "externalReference" | "externalUrl" | "error">> {
         const prior = this.#receipts.get(action.idempotencyKey);
         if (prior)

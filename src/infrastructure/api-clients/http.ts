@@ -2,7 +2,12 @@ export type HttpClient = typeof fetch;
 export class IntegrationError extends Error {
     readonly retryable: boolean;
     readonly code: string;
-    constructor(code: string, message: string, retryable = false) { super(message); this.name = "IntegrationError"; this.code = code; this.retryable = retryable; }
+    constructor(code: string, message: string, retryable = false) {
+        super(message);
+        this.name = "IntegrationError";
+        this.code = code;
+        this.retryable = retryable;
+    }
 }
 export async function requestJson(url: string, init: RequestInit = {}, client: HttpClient = fetch, timeoutMs = 8000): Promise<unknown> {
     const parsed = new URL(url);
@@ -23,4 +28,6 @@ export async function requestJson(url: string, init: RequestInit = {}, client: H
         throw new IntegrationError("INVALID_RESPONSE", "The integration returned an invalid response.");
     }
 }
-export function jsonRequest(method: string, body: unknown, headers: Record<string, string> = {}): RequestInit { return { method, headers: { "Content-Type": "application/json", ...headers }, body: JSON.stringify(body) }; }
+export function jsonRequest(method: string, body: unknown, headers: Record<string, string> = {}): RequestInit {
+    return { method, headers: { "Content-Type": "application/json", ...headers }, body: JSON.stringify(body) };
+}

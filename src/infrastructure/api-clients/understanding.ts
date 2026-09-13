@@ -8,7 +8,9 @@ import { requestJson, jsonRequest, type HttpClient } from "./http.ts";
 import { modelUnderstandingSchema } from "./contracts.ts";
 const SYMPTOMS: Record<IssueUnderstanding["issue"]["category"], string> = { authentication: "login authentication failure troubleshooting", api_timeout: "HTTP 504 API timeout troubleshooting", billing: "duplicate subscription charge troubleshooting", sales: "enterprise software licensing pricing", logistics: "shipment delayed delivery troubleshooting", product: "software feature request triage", privacy: "customer data deletion request workflow", unresolved: "support issue triage troubleshooting" };
 // Closed vocabulary: source text, names, emails, URLs, and account numbers cannot enter a query.
-export function researchQuery(report: Report): string { return SYMPTOMS[understandReport(report).issue.category]; }
+export function researchQuery(report: Report): string {
+    return SYMPTOMS[understandReport(report).issue.category];
+}
 export async function research(report: Report, env: Environment, client: HttpClient = fetch): Promise<NonNullable<IssueUnderstanding["research"]>> {
     if (isDemo(env) || !env.EXA_API_KEY)
         return [];

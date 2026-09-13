@@ -5,15 +5,33 @@ import type { PlannedAction } from "../../domain/runs/planned-action.ts";
 import { requestJson, jsonRequest, IntegrationError, type HttpClient } from "../api-clients/http.ts";
 const idSchema = z.object({ id: z.union([z.string(), z.number()]), url: z.string().url().optional() });
 const githubIssue = z.object({ number: z.number(), html_url: z.string().url(), title: z.string(), body: z.string().nullable().optional(), labels: z.array(z.union([z.string(), z.object({ name: z.string() })])).default([]), assignee: z.object({ login: z.string() }).nullable().optional() });
-function required(value: string | undefined, name: string): string { if (!value)
-    throw new IntegrationError("NOT_CONFIGURED", `${name} is not configured.`); return value; }
-function segment(value: unknown): string { return encodeURIComponent(String(value)); }
-export function jiraDocument(text: string) { return { type: "doc", version: 1, content: text.split("\n").map(line => ({ type: "paragraph", content: line ? [{ type: "text", text: line }] : [] })) }; }
-function jiraRoot(env: Environment): string { const url = new URL(required(env.JIRA_BASE_URL, "Jira site")); if (url.protocol !== "https:" || !url.hostname.endsWith(".atlassian.net"))
-    throw new IntegrationError("INVALID_SITE", "Jira Cloud requires an HTTPS atlassian.net site."); return url.origin; }
-function githubRepo(env: Environment): string { const repo = required(env.GITHUB_REPO, "GitHub repository"); if (!/^[\w.-]+\/[\w.-]+$/.test(repo))
-    throw new IntegrationError("INVALID_REPOSITORY", "Use owner/repository for GitHub."); return repo; }
-export function configuredOwner(env: Environment, owner: string): string | undefined { const tracker = selectedTracker(env); return jsonMap(tracker === "github" ? env.GITHUB_ASSIGNEES : tracker === "clickup" ? env.CLICKUP_ASSIGNEES : env.JIRA_ASSIGNEES)[owner]; }
+function required(value: string | undefined, name: string): string {
+    if (!value)
+        throw new IntegrationError("NOT_CONFIGURED", `${name} is not configured.`);
+    return value;
+}
+function segment(value: unknown): string {
+    return encodeURIComponent(String(value));
+}
+export function jiraDocument(text: string) {
+    return { type: "doc", version: 1, content: text.split("\n").map(line => ({ type: "paragraph", content: line ? [{ type: "text", text: line }] : [] })) };
+}
+function jiraRoot(env: Environment): string {
+    const url = new URL(required(env.JIRA_BASE_URL, "Jira site"));
+    if (url.protocol !== "https:" || !url.hostname.endsWith(".atlassian.net"))
+        throw new IntegrationError("INVALID_SITE", "Jira Cloud requires an HTTPS atlassian.net site.");
+    return url.origin;
+}
+function githubRepo(env: Environment): string {
+    const repo = required(env.GITHUB_REPO, "GitHub repository");
+    if (!/^[\w.-]+\/[\w.-]+$/.test(repo))
+        throw new IntegrationError("INVALID_REPOSITORY", "Use owner/repository for GitHub.");
+    return repo;
+}
+export function configuredOwner(env: Environment, owner: string): string | undefined {
+    const tracker = selectedTracker(env);
+    return jsonMap(tracker === "github" ? env.GITHUB_ASSIGNEES : tracker === "clickup" ? env.CLICKUP_ASSIGNEES : env.JIRA_ASSIGNEES)[owner];
+}
 export function trackerDestination(env: Environment): string {
     const tracker = selectedTracker(env);
     if (tracker === "github")
@@ -30,7 +48,11 @@ export class TrackerAdapter implements ExecutionAdapter {
     readonly name: string;
     readonly #env: Environment;
     readonly #client: HttpClient;
-    constructor(env: Environment, client: HttpClient = fetch) { this.#env = env; this.#client = client; this.name = selectedTracker(env) ?? "unconfigured-tracker"; }
+    constructor(env: Environment, client: HttpClient = fetch) {
+        this.#env = env;
+        this.#client = client;
+        this.name = selectedTracker(env) ?? "unconfigured-tracker";
+    }
     async perform(action: PlannedAction) {
         const env = this.#env, p = action.resolvedInput;
         if (this.name === "github") {

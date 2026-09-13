@@ -1,2 +1,4 @@
 import { Privacy } from "@/ui/privacy/privacy";
-export default function Page() { return <Privacy />; }
+export default function Page() {
+    return <Privacy />;
+}

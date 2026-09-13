@@ -16,7 +16,10 @@ export async function createLivePlan(input: unknown, session: ServerSession, env
     const old = [...session.runs.values()].find(r => r.triggerReportId === data.report.id && r.status !== "cancelled");
     if (old)
         return old;
-    const traces = data.traces.map(t => ({ ...t, status: "completed" as const, events: t.events.flatMap(e => { const event = scrubObservation(e); return event ? [event] : []; }) }));
+    const traces = data.traces.map(t => ({ ...t, status: "completed" as const, events: t.events.flatMap(e => {
+            const event = scrubObservation(e);
+            return event ? [event] : [];
+        }) }));
     const pattern = detectPattern(traces);
     if (!pattern)
         throw new ApiError(422, "Two complete, matching observations are required.");

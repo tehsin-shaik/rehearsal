@@ -9,7 +9,10 @@ export class IdempotentAdapter implements ExecutionAdapter {
         digest: string;
         promise: ReturnType<ExecutionAdapter["perform"]>;
     }>();
-    constructor(adapter: ExecutionAdapter) { this.#adapter = adapter; this.name = adapter.name; }
+    constructor(adapter: ExecutionAdapter) {
+        this.#adapter = adapter;
+        this.name = adapter.name;
+    }
     async perform(action: PlannedAction) {
         const digest = JSON.stringify({ action: action.action, input: action.resolvedInput });
         const old = this.#receipts.get(action.idempotencyKey);
