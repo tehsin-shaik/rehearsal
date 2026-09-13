@@ -25,9 +25,9 @@ try{
  await page.getByText('This report needs your judgment.',{exact:true}).last().waitFor();
  assert.equal(await page.getByRole('button',{name:'Approve & execute',exact:true}).count(),0);
  await page.getByRole('button',{name:'Close dialog',exact:true}).click();
- await page.getByRole('link',{name:'Workflows',exact:true}).click();await page.getByText('Customer support triage',{exact:true}).waitFor();
+ await page.getByRole('link',{name:/^Workflows/}).first().click();await page.getByText('Customer support triage',{exact:true}).waitFor();
  for(const route of ['/','/onboarding','/workspace','/workflows','/workflows/support-triage','/activity','/privacy','/integrations']){const response=await page.goto(base+route);assert.equal(response.status(),200,route);await page.locator('h1').waitFor();}
  await page.setViewportSize({width:390,height:844});await page.goto(base+'/workspace');await page.getByRole('button',{name:'Start first observation',exact:true}).waitFor();assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1),'Mobile page should not overflow horizontally');await page.screenshot({path:'test-results/mobile.png',fullPage:true});
  assert.deepEqual(errors,[]);assert.deepEqual(external,[]);console.log('BROWSER_CHECKS_PASSED: manual learning, adaptation, approval, review, routes, mobile, zero external requests.');
  if(process.env.REHEARSAL_PRINT_SCREENSHOT==='true'){await page.setViewportSize({width:1366,height:900});await page.goto(base+'/workspace');await page.getByRole('button',{name:'Start first observation',exact:true}).waitFor();console.log('REHEARSAL_SCREENSHOT_BASE64='+Buffer.from(await page.screenshot({type:'jpeg',quality:65})).toString('base64'));}
-}finally{await browser.close();}
+}catch(error){await page.screenshot({path:'test-results/failure.png',fullPage:true});throw error;}finally{await browser.close();}

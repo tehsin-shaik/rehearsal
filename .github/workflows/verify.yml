@@ -19,17 +19,11 @@ jobs:
         with:
           node-version: '24'
           cache: npm
-      - name: Refresh exact dependency lock
-        run: npm install --package-lock-only --ignore-scripts
       - run: npm ci
-      - name: Format source and export verification checkpoint
-        run: |
-          npx prettier --write src tests extension scripts docs *.json *.ts *.mjs .github/workflows/*.yml
-          node scripts/export-ci-checkpoint.mjs
-      - run: npm run typecheck
-      - run: npm run lint
-      - run: npm test
-      - run: npm run build
+      - run: npm run typecheck 2>&1 | tee /tmp/rehearsal-typecheck.log
+      - run: npm run lint 2>&1 | tee /tmp/rehearsal-lint.log
+      - run: npm test 2>&1 | tee /tmp/rehearsal-tests.log
+      - run: npm run build 2>&1 | tee /tmp/rehearsal-build.log
       - name: Install browser verification tools
         run: |
           npm install --no-save --package-lock=false playwright
@@ -38,9 +32,7 @@ jobs:
         run: |
           npm start -- --hostname 127.0.0.1 > /tmp/rehearsal-server.log 2>&1 &
           for i in $(seq 1 30); do curl -fsS http://127.0.0.1:3000/workspace > /dev/null && break; sleep 1; done
-          node scripts/verify-browser.mjs
-        env:
-          REHEARSAL_PRINT_SCREENSHOT: 'true'
+          node scripts/verify-browser.mjs 2>&1 | tee /tmp/rehearsal-browser.log
       - uses: actions/upload-artifact@v4
         if: always()
         with:
