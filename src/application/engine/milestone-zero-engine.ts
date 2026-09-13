@@ -1,5 +1,6 @@
 import type { WorkflowTrace } from "../../domain/events/workflow-trace.ts";
 import type { LearnedPattern } from "../../domain/patterns/learned-pattern.ts";
+import { detectRepeatedPattern } from "../../domain/patterns/pattern-detection.ts";
 import type { AgentRun } from "../../domain/runs/agent-run.ts";
 import type { PlannedAction } from "../../domain/runs/planned-action.ts";
 import type { IssueUnderstanding } from "../../domain/understanding/issue-understanding.ts";
@@ -12,8 +13,12 @@ function pending(operation: string): never {
 export function detectPattern(
   traces: readonly WorkflowTrace[],
 ): LearnedPattern | null {
-  void traces;
-  return pending("pattern detection and compilation");
+  const detection = detectRepeatedPattern(traces);
+  if (!detection.detected) {
+    return null;
+  }
+
+  return pending("pattern compilation");
 }
 
 export function understandReport(report: {

@@ -1,151 +1,129 @@
+import { SemanticTraceBuilder } from "../../domain/events/trace-builder.ts";
 import type { WorkflowTrace } from "../../domain/events/workflow-trace.ts";
+import { apiTimeoutReport, loginAuthenticationReport } from "./reports.ts";
 
-export const loginAuthenticationTrace = {
-  id: "trace-login-001",
-  status: "completed",
-  startedAt: "2026-01-05T09:02:00.000Z",
-  completedAt: "2026-01-05T09:07:00.000Z",
-  events: [
-    {
-      id: "event-login-classify",
-      traceId: "trace-login-001",
-      occurredAt: "2026-01-05T09:02:00.000Z",
-      sourceApplication: "mail",
-      action: "classify_report",
-      intent: "Understand the authentication report",
-      payload: { reportId: "report-login-001", category: "authentication" },
-      confidence: 1,
-      origin: "observed",
-      estimatedEffortSeconds: 45,
-    },
-    {
-      id: "event-login-create",
-      traceId: "trace-login-001",
-      occurredAt: "2026-01-05T09:03:00.000Z",
-      sourceApplication: "issue_tracker",
-      action: "create_issue",
-      intent: "Create a support issue",
-      payload: { reportId: "report-login-001", customerName: "Maya Chen" },
-      confidence: 1,
-      origin: "observed",
-      estimatedEffortSeconds: 75,
-    },
-    {
-      id: "event-login-assign",
-      traceId: "trace-login-001",
-      occurredAt: "2026-01-05T09:04:00.000Z",
-      sourceApplication: "issue_tracker",
-      action: "assign_owner",
-      intent: "Assign the technical support owner",
-      payload: { department: "technical_support", owner: "Umar" },
-      confidence: 1,
-      origin: "observed",
-      estimatedEffortSeconds: 30,
-    },
-    {
-      id: "event-login-notify",
-      traceId: "trace-login-001",
-      occurredAt: "2026-01-05T09:05:00.000Z",
-      sourceApplication: "team_chat",
-      action: "send_team_notification",
-      intent: "Notify the support team",
-      payload: { department: "technical_support", owner: "Umar" },
-      confidence: 1,
-      origin: "observed",
-      estimatedEffortSeconds: 45,
-    },
-    {
-      id: "event-login-reply",
-      traceId: "trace-login-001",
-      occurredAt: "2026-01-05T09:06:00.000Z",
-      sourceApplication: "mail",
-      action: "reply_to_customer",
-      intent: "Acknowledge the customer report",
-      payload: { reportId: "report-login-001", customerName: "Maya Chen" },
-      confidence: 1,
-      origin: "observed",
-      estimatedEffortSeconds: 60,
-    },
-  ],
-} satisfies WorkflowTrace;
+interface SupportTriageTraceInput {
+  readonly traceId: string;
+  readonly startedAt: string;
+  readonly completedAt: string;
+  readonly report: {
+    readonly id: string;
+    readonly subject: string;
+  };
+  readonly customerName: string;
+  readonly customerEmail: string;
+  readonly issueDescription: string;
+  readonly category: "authentication" | "api_timeout";
+  readonly severity: "high";
+  readonly includeAdditionalRead: boolean;
+}
 
-export const apiTimeoutTrace = {
-  id: "trace-api-002",
-  status: "completed",
-  startedAt: "2026-01-06T10:17:00.000Z",
-  completedAt: "2026-01-06T10:23:00.000Z",
-  events: [
-    {
-      id: "event-api-read",
-      traceId: "trace-api-002",
-      occurredAt: "2026-01-06T10:17:00.000Z",
+function buildSupportTriageTrace(
+  input: SupportTriageTraceInput,
+): WorkflowTrace {
+  const builder = new SemanticTraceBuilder({
+    traceId: input.traceId,
+    startedAt: input.startedAt,
+  });
+  const startTime = new Date(input.startedAt).getTime();
+  const eventTime = (minuteOffset: number): string =>
+    new Date(startTime + minuteOffset * 60_000).toISOString();
+
+  builder.append({
+    occurredAt: eventTime(0),
+    sourceApplication: "mail",
+    action: "report_received",
+    intent: "Receive a support report",
+    payload: { reportId: input.report.id, subject: input.report.subject },
+  });
+
+  if (input.includeAdditionalRead) {
+    builder.append({
+      occurredAt: eventTime(1),
       sourceApplication: "mail",
       action: "read_report",
-      intent: "Read additional API failure detail",
-      payload: { reportId: "report-api-002" },
-      confidence: 1,
-      origin: "observed",
+      intent: "Read additional support report detail",
+      payload: { reportId: input.report.id },
       estimatedEffortSeconds: 20,
+    });
+  }
+
+  builder.append({
+    occurredAt: eventTime(2),
+    sourceApplication: "issue_tracker",
+    action: "create_issue",
+    intent: "Create a support issue",
+    payload: {
+      reportId: input.report.id,
+      customerName: input.customerName,
+      customerEmail: input.customerEmail,
+      issueTitle: input.report.subject,
+      issueDescription: input.issueDescription,
+      category: input.category,
+      department: "technical_support",
+      severity: input.severity,
+      labels: ["support", input.category],
     },
-    {
-      id: "event-api-classify",
-      traceId: "trace-api-002",
-      occurredAt: "2026-01-06T10:18:00.000Z",
-      sourceApplication: "mail",
-      action: "classify_report",
-      intent: "Understand the API timeout report",
-      payload: { reportId: "report-api-002", category: "api_timeout" },
-      confidence: 1,
-      origin: "observed",
-      estimatedEffortSeconds: 45,
+    confidence: 0.98,
+    estimatedEffortSeconds: 75,
+  });
+
+  builder.append({
+    occurredAt: eventTime(3),
+    sourceApplication: "issue_tracker",
+    action: "assign_owner",
+    intent: "Assign the routed issue owner",
+    payload: { department: "technical_support", owner: "Umar" },
+    estimatedEffortSeconds: 30,
+  });
+
+  builder.append({
+    occurredAt: eventTime(4),
+    sourceApplication: "team_chat",
+    action: "send_team_notification",
+    intent: "Send a team notification",
+    payload: { department: "technical_support", owner: "Umar" },
+    estimatedEffortSeconds: 45,
+  });
+
+  builder.append({
+    occurredAt: eventTime(5),
+    sourceApplication: "mail",
+    action: "reply_to_customer",
+    intent: "Reply to the customer",
+    payload: {
+      reportId: input.report.id,
+      customerName: input.customerName,
+      responseType: "acknowledgement",
     },
-    {
-      id: "event-api-create",
-      traceId: "trace-api-002",
-      occurredAt: "2026-01-06T10:19:00.000Z",
-      sourceApplication: "issue_tracker",
-      action: "create_issue",
-      intent: "Create a support issue",
-      payload: { reportId: "report-api-002", customerName: "Noah Williams" },
-      confidence: 1,
-      origin: "observed",
-      estimatedEffortSeconds: 75,
-    },
-    {
-      id: "event-api-assign",
-      traceId: "trace-api-002",
-      occurredAt: "2026-01-06T10:20:00.000Z",
-      sourceApplication: "issue_tracker",
-      action: "assign_owner",
-      intent: "Assign the technical support owner",
-      payload: { department: "technical_support", owner: "Umar" },
-      confidence: 1,
-      origin: "observed",
-      estimatedEffortSeconds: 30,
-    },
-    {
-      id: "event-api-notify",
-      traceId: "trace-api-002",
-      occurredAt: "2026-01-06T10:21:00.000Z",
-      sourceApplication: "team_chat",
-      action: "send_team_notification",
-      intent: "Notify the support team",
-      payload: { department: "technical_support", owner: "Umar" },
-      confidence: 1,
-      origin: "observed",
-      estimatedEffortSeconds: 45,
-    },
-    {
-      id: "event-api-reply",
-      traceId: "trace-api-002",
-      occurredAt: "2026-01-06T10:22:00.000Z",
-      sourceApplication: "mail",
-      action: "reply_to_customer",
-      intent: "Acknowledge the customer report",
-      payload: { reportId: "report-api-002", customerName: "Noah Williams" },
-      confidence: 1,
-      origin: "observed",
-      estimatedEffortSeconds: 60,
-    },
-  ],
-} satisfies WorkflowTrace;
+    estimatedEffortSeconds: 60,
+  });
+
+  return builder.complete(input.completedAt);
+}
+
+export const loginAuthenticationTrace = buildSupportTriageTrace({
+  traceId: "trace-login-001",
+  startedAt: "2026-01-05T09:02:00.000Z",
+  completedAt: "2026-01-05T09:07:00.000Z",
+  report: loginAuthenticationReport,
+  customerName: "Maya Chen",
+  customerEmail: "maya.chen@example.test",
+  issueDescription: "Customer cannot sign in after resetting a password.",
+  category: "authentication",
+  severity: "high",
+  includeAdditionalRead: false,
+});
+
+export const apiTimeoutTrace = buildSupportTriageTrace({
+  traceId: "trace-api-002",
+  startedAt: "2026-01-06T10:17:00.000Z",
+  completedAt: "2026-01-06T10:23:00.000Z",
+  report: apiTimeoutReport,
+  customerName: "Noah Williams",
+  customerEmail: "noah.williams@example.test",
+  issueDescription: "Production order requests consistently time out.",
+  category: "api_timeout",
+  severity: "high",
+  includeAdditionalRead: true,
+});

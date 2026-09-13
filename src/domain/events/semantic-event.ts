@@ -1,16 +1,11 @@
+import type { SemanticAction, SourceApplication } from "./taxonomy.ts";
+
 export interface SemanticEvent {
   readonly id: string;
   readonly traceId: string;
   readonly occurredAt: string;
-  readonly sourceApplication: "mail" | "issue_tracker" | "team_chat" | "system";
-  readonly action:
-    | "report_received"
-    | "read_report"
-    | "classify_report"
-    | "create_issue"
-    | "assign_owner"
-    | "send_team_notification"
-    | "reply_to_customer";
+  readonly sourceApplication: SourceApplication;
+  readonly action: SemanticAction;
   readonly intent: string;
   readonly payload: Readonly<Record<string, unknown>>;
   readonly confidence: number;
