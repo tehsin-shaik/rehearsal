@@ -39,3 +39,14 @@ jobs:
           name: rehearsal-browser-checks
           path: test-results/
           if-no-files-found: ignore
+
+  optional-services:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install --prefix integrations/node-services --ignore-scripts
+      - run: npm test --prefix integrations/node-services

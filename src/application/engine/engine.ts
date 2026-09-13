@@ -7,8 +7,11 @@ export { understandReport } from "../../domain/understanding/classifier.ts";
 export { planRun, approveRun } from "../../domain/runs/planner.ts";
 const memory = new MemoryAdapters();
 const executor = new RunExecutor(memory);
-export function executeRun(run: AgentRun, options?: { readonly failOnAction?: PlannedAction["action"] }): Promise<AgentRun> {
-  if (options?.failOnAction) memory.failOnce(options.failOnAction);
-  return executor.execute(run);
+export function executeRun(run: AgentRun, options?: {
+    readonly failOnAction?: PlannedAction["action"];
+}): Promise<AgentRun> {
+    if (options?.failOnAction)
+        memory.failOnce(options.failOnAction);
+    return executor.execute(run);
 }
 export function resumeRun(run: AgentRun): Promise<AgentRun> { return executor.execute(run); }

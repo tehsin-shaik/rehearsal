@@ -1,26 +1,73 @@
 import { test } from "node:test";
 import { strict as assert } from "node:assert";
-import { approveRun,detectPattern,planRun,understandReport } from "../../src/application/engine/index.ts";
-import { loginAuthenticationTrace,apiTimeoutTrace,duplicateBillingChargeReport,ambiguousReviewReport } from "../../src/demo/fixtures/index.ts";
+import { approveRun, detectPattern, planRun, understandReport } from "../../src/application/engine/index.ts";
+import { loginAuthenticationTrace, apiTimeoutTrace, duplicateBillingChargeReport, ambiguousReviewReport } from "../../src/demo/fixtures/index.ts";
 import { MemoryAdapters } from "../../src/demo/adapters/memory.ts";
-import { RunExecutor,verifyRun } from "../../src/application/engine/executor.ts";
-import { checkPolicy,evaluateAction } from "../../src/domain/policy/guard.ts";
-import { RehearsalSession,MANUAL_STEPS } from "../../src/application/commands/session.ts";
+import { RunExecutor, verifyRun } from "../../src/application/engine/executor.ts";
+import { checkPolicy, evaluateAction } from "../../src/domain/policy/guard.ts";
+import { RehearsalSession, MANUAL_STEPS } from "../../src/application/commands/session.ts";
 import { transition } from "../../src/application/state-machine/transitions.ts";
-const pattern=detectPattern([loginAuthenticationTrace,apiTimeoutTrace])!;
-const makeRun=()=>planRun(pattern,understandReport(duplicateBillingChargeReport));
-test("demo completes with zero network calls and exact adapter effects",async()=>{
-  const original=globalThis.fetch;globalThis.fetch=()=>{throw new Error("Network forbidden in demo");};
-  try{const memory=new MemoryAdapters();const run=await new RunExecutor(memory).execute(approveRun(makeRun(),"reviewer"));assert.ok(verifyRun(run));assert.equal(memory.issues.length,1);assert.equal(memory.issues[0].owner,"Awaiz");assert.equal(memory.messages.length,1);assert.equal(memory.replies.length,1);assert.match(memory.messages[0].text,/RHR-1043/);assert.ok(!memory.messages[0].text.includes("Pending issue"));}finally{globalThis.fetch=original;}
+const pattern = detectPattern([loginAuthenticationTrace, apiTimeoutTrace])!;
+const makeRun = () => planRun(pattern, understandReport(duplicateBillingChargeReport));
+test("demo completes with zero network calls and exact adapter effects", async () => {
+    const original = globalThis.fetch;
+    globalThis.fetch = () => { throw new Error("Network forbidden in demo"); };
+    try {
+        const memory = new MemoryAdapters();
+        const run = await new RunExecutor(memory).execute(approveRun(makeRun(), "reviewer"));
+        assert.ok(verifyRun(run));
+        assert.equal(memory.issues.length, 1);
+        assert.equal(memory.issues[0].owner, "Awaiz");
+        assert.equal(memory.messages.length, 1);
+        assert.equal(memory.replies.length, 1);
+        assert.match(memory.messages[0].text, /RHR-1043/);
+        assert.ok(!memory.messages[0].text.includes("Pending issue"));
+    }
+    finally {
+        globalThis.fetch = original;
+    }
 });
-test("double clicks and replay reuse confirmed execution",async()=>{const memory=new MemoryAdapters(),executor=new RunExecutor(memory),run=approveRun(makeRun(),"reviewer");const [a,b]=await Promise.all([executor.execute(run),executor.execute(run)]);assert.deepEqual(a,b);await executor.execute(run);assert.equal(memory.issues.length,1);assert.equal(memory.messages.length,1);});
-for(const failure of ["create_issue","assign_owner","send_team_notification","reply_to_customer"] as const)test(`failure and retry at ${failure} preserve receipts`,async()=>{const memory=new MemoryAdapters(),executor=new RunExecutor(memory);memory.failOnce(failure);const failed=await executor.execute(approveRun(makeRun(),"reviewer"));assert.equal(failed.status,"failed");assert.ok(!verifyRun(failed));const index=failed.plannedActions.findIndex(a=>a.action===failure);assert.ok(failed.plannedActions.slice(index+1).every(a=>a.status==="not_attempted"));const done=await executor.execute(failed);assert.ok(verifyRun(done));assert.equal(memory.issues.length,1);assert.equal(memory.messages.length,1);assert.equal(memory.replies.length,1);});
-test("approval cannot cover edited action parameters",async()=>{const run=approveRun(makeRun(),"reviewer");const changed={...run,plannedActions:run.plannedActions.map(a=>a.action==="reply_to_customer"?{...a,resolvedInput:{...a.resolvedInput,to:"wrong@example.test"}}:a)};await assert.rejects(new RunExecutor(new MemoryAdapters()).execute(changed),/changed after approval/);});
-test("ambiguous reports are a no-op until resolved",async()=>{const memory=new MemoryAdapters();const run=planRun(pattern,understandReport(ambiguousReviewReport));assert.equal((await new RunExecutor(memory).execute(run)).status,"needs_review");assert.equal(memory.issues.length,0);assert.throws(()=>approveRun(run,"reviewer"),/Resolve review/);});
-test("policy rejects payments, unresolved values, and client permission laundering",()=>{assert.equal(checkPolicy("read",false).effect,"allow");assert.equal(checkPolicy("draft",false).effect,"allow");assert.equal(checkPolicy("payment",true).effect,"block");assert.equal(checkPolicy("delete",false).effect,"require_approval");assert.equal(checkPolicy("create_external",true,false).effect,"block");const action=makeRun().plannedActions[1];assert.equal(evaluateAction({...action,permission:"read"},true).effect,"block");});
-test("verification rejects a completed label without successful receipts",()=>{const run=makeRun();assert.equal(verifyRun({...run,status:"completed"}),false);});
-test("only explicitly authored invariant fields become constants",()=>{const traces=[loginAuthenticationTrace,apiTimeoutTrace].map(t=>({...t,events:t.events.map(e=>({...e,payload:{...e.payload,authoredConstants:{workspace:"support",owner:"Umar"}}}))}));const p=detectPattern(traces)!;assert.deepEqual(p.constants.map(c=>c.field),["workspace"]);assert.ok(p.variables.find(v=>v.field==="owner"));assert.ok(p.confidence<.9);assert.equal(p.stages.length,5);});
-test("compiler rejects repeated but incomplete workflows",()=>{const a={...loginAuthenticationTrace,events:loginAuthenticationTrace.events.filter(e=>e.action!=="reply_to_customer")};assert.equal(detectPattern([a,{...a,id:"other"}]),null);});
-test("manual flow and demo shortcuts use the same semantic engine",async()=>{const manual=new RehearsalSession();for(let n=0;n<2;n++){manual.startObservation();for(let i=0;i<MANUAL_STEPS.length;i++)manual.manualNext();}const quick=new RehearsalSession();quick.instantObservation();quick.instantObservation();assert.deepEqual(manual.getSnapshot().traces.map(t=>t.events.map(e=>e.action)),quick.getSnapshot().traces.map(t=>t.events.map(e=>e.action)));assert.ok(manual.getSnapshot().pattern);manual.activate();manual.deliver();assert.equal(manual.getSnapshot().run?.understanding.owner,"Awaiz");assert.equal(manual.getSnapshot().issues.length,4);await manual.execute();assert.equal(manual.getSnapshot().issues.length,5);assert.equal(manual.getSnapshot().phase,"completed");manual.deliver(true);assert.equal(manual.getSnapshot().phase,"needs_review");manual.resolveReview("billing");assert.equal(manual.getSnapshot().phase,"ghost_run");});
-test("pause, exclusions, cancellation, and transition guards fail closed",()=>{const session=new RehearsalSession();session.setPaused(true);assert.throws(()=>session.startObservation(),/Resume/);session.setPaused(false);session.setExcluded("mail",true);assert.throws(()=>session.startObservation(),/Enable all/);session.setExcluded("mail",false);session.instantObservation();session.instantObservation();session.activate();session.deliver();session.cancel();assert.equal(session.getSnapshot().run?.status,"cancelled");assert.throws(()=>transition("idle","executing"));});
-test("server-sized execution batches preserve the same ordered executor",async()=>{const memory=new MemoryAdapters(),executor=new RunExecutor(memory);let run=approveRun(makeRun(),"reviewer");run=await executor.execute(run,undefined,1);assert.equal(run.results.length,1);assert.equal(memory.issues.length,0);for(let i=0;i<5;i++)run=await executor.execute(run,undefined,1);assert.ok(verifyRun(run));assert.equal(memory.issues.length,1);});
+test("double clicks and replay reuse confirmed execution", async () => { const memory = new MemoryAdapters(), executor = new RunExecutor(memory), run = approveRun(makeRun(), "reviewer"); const [a, b] = await Promise.all([executor.execute(run), executor.execute(run)]); assert.deepEqual(a, b); await executor.execute(run); assert.equal(memory.issues.length, 1); assert.equal(memory.messages.length, 1); });
+for (const failure of ["create_issue", "assign_owner", "send_team_notification", "reply_to_customer"] as const)
+    test(`failure and retry at ${failure} preserve receipts`, async () => { const memory = new MemoryAdapters(), executor = new RunExecutor(memory); memory.failOnce(failure); const failed = await executor.execute(approveRun(makeRun(), "reviewer")); assert.equal(failed.status, "failed"); assert.ok(!verifyRun(failed)); const index = failed.plannedActions.findIndex(a => a.action === failure); assert.ok(failed.plannedActions.slice(index + 1).every(a => a.status === "not_attempted")); const done = await executor.execute(failed); assert.ok(verifyRun(done)); assert.equal(memory.issues.length, 1); assert.equal(memory.messages.length, 1); assert.equal(memory.replies.length, 1); });
+test("approval cannot cover edited action parameters", async () => { const run = approveRun(makeRun(), "reviewer"); const changed = { ...run, plannedActions: run.plannedActions.map(a => a.action === "reply_to_customer" ? { ...a, resolvedInput: { ...a.resolvedInput, to: "wrong@example.test" } } : a) }; await assert.rejects(new RunExecutor(new MemoryAdapters()).execute(changed), /changed after approval/); });
+test("ambiguous reports are a no-op until resolved", async () => { const memory = new MemoryAdapters(); const run = planRun(pattern, understandReport(ambiguousReviewReport)); assert.equal((await new RunExecutor(memory).execute(run)).status, "needs_review"); assert.equal(memory.issues.length, 0); assert.throws(() => approveRun(run, "reviewer"), /Resolve review/); });
+test("policy rejects payments, unresolved values, and client permission laundering", () => { assert.equal(checkPolicy("read", false).effect, "allow"); assert.equal(checkPolicy("draft", false).effect, "allow"); assert.equal(checkPolicy("payment", true).effect, "block"); assert.equal(checkPolicy("delete", false).effect, "require_approval"); assert.equal(checkPolicy("create_external", true, false).effect, "block"); const action = makeRun().plannedActions[1]; assert.equal(evaluateAction({ ...action, permission: "read" }, true).effect, "block"); });
+test("verification rejects a completed label without successful receipts", () => { const run = makeRun(); assert.equal(verifyRun({ ...run, status: "completed" }), false); });
+test("only explicitly authored invariant fields become constants", () => { const traces = [loginAuthenticationTrace, apiTimeoutTrace].map(t => ({ ...t, events: t.events.map(e => ({ ...e, payload: { ...e.payload, authoredConstants: { workspace: "support", owner: "Umar" } } })) })); const p = detectPattern(traces)!; assert.deepEqual(p.constants.map(c => c.field), ["workspace"]); assert.ok(p.variables.find(v => v.field === "owner")); assert.ok(p.confidence < .9); assert.equal(p.stages.length, 5); });
+test("compiler rejects repeated but incomplete workflows", () => { const a = { ...loginAuthenticationTrace, events: loginAuthenticationTrace.events.filter(e => e.action !== "reply_to_customer") }; assert.equal(detectPattern([a, { ...a, id: "other" }]), null); });
+test("manual flow and demo shortcuts use the same semantic engine", async () => { const manual = new RehearsalSession(); for (let n = 0; n < 2; n++) {
+    manual.startObservation();
+    for (let i = 0; i < MANUAL_STEPS.length; i++)
+        manual.manualNext();
+} const quick = new RehearsalSession(); quick.instantObservation(); quick.instantObservation(); assert.deepEqual(manual.getSnapshot().traces.map(t => t.events.map(e => e.action)), quick.getSnapshot().traces.map(t => t.events.map(e => e.action))); assert.ok(manual.getSnapshot().pattern); manual.activate(); manual.deliver(); assert.equal(manual.getSnapshot().run?.understanding.owner, "Awaiz"); assert.equal(manual.getSnapshot().issues.length, 4); await manual.execute(); assert.equal(manual.getSnapshot().issues.length, 5); assert.equal(manual.getSnapshot().phase, "completed"); manual.deliver(true); assert.equal(manual.getSnapshot().phase, "needs_review"); manual.resolveReview("billing"); assert.equal(manual.getSnapshot().phase, "ghost_run"); });
+test("pause, exclusions, cancellation, and transition guards fail closed", () => { const session = new RehearsalSession(); session.setPaused(true); assert.throws(() => session.startObservation(), /Resume/); session.setPaused(false); session.setExcluded("mail", true); assert.throws(() => session.startObservation(), /Enable all/); session.setExcluded("mail", false); session.instantObservation(); session.instantObservation(); session.activate(); session.deliver(); session.cancel(); assert.equal(session.getSnapshot().run?.status, "cancelled"); assert.throws(() => transition("idle", "executing")); });
+test("server-sized execution batches preserve the same ordered executor", async () => { const memory = new MemoryAdapters(), executor = new RunExecutor(memory); let run = approveRun(makeRun(), "reviewer"); run = await executor.execute(run, undefined, 1); assert.equal(run.results.length, 1); assert.equal(memory.issues.length, 0); for (let i = 0; i < 5; i++)
+    run = await executor.execute(run, undefined, 1); assert.ok(verifyRun(run)); assert.equal(memory.issues.length, 1); });
+test("clearing visible history cannot duplicate an already executed report", async () => {
+    const s = new RehearsalSession();
+    s.instantObservation();
+    s.instantObservation();
+    s.activate();
+    s.deliver();
+    await s.execute();
+    s.clearHistory();
+    assert.throws(() => s.deliver(), /already has a run/);
+});
+test("forgetting and reteaching cannot reuse external issue numbers", async () => {
+    const s = new RehearsalSession();
+    s.instantObservation();
+    s.instantObservation();
+    s.activate();
+    s.deliver();
+    await s.execute();
+    s.forget();
+    s.instantObservation();
+    s.instantObservation();
+    const ids = s.getSnapshot().issues.map(i => i.id);
+    assert.equal(new Set(ids).size, ids.length);
+});
+test("nested customer objects cannot bypass variable provenance", () => {
+    const traces = [loginAuthenticationTrace, apiTimeoutTrace].map(t => ({ ...t, events: t.events.map(e => ({ ...e, payload: { ...e.payload, authoredConstants: { customer: { name: "Alex" }, custom: { owner: "Umar" }, workspace: "support" } } })) }));
+    assert.deepEqual(detectPattern(traces)?.constants.map(c => c.field), ["workspace"]);
+});
