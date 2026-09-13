@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "Rehearsal — Semantic Observer",
+  "version": "1.0.0",
+  "description": "Observe supported workflow metadata. Rehearse before acting.",
+  "permissions": ["storage", "alarms"],
+  "host_permissions": ["http://localhost:3000/*", "http://127.0.0.1:3000/*"],
+  "optional_host_permissions": ["https://*/*"],
+  "background": { "service_worker": "background.js", "type": "module" },
+  "action": { "default_popup": "popup.html", "default_title": "Rehearsal" },
+  "content_scripts": [{ "matches": ["https://mail.google.com/mail/*", "https://*.atlassian.net/*", "https://app.clickup.com/*", "https://app.slack.com/client/*"], "js": ["content.js"], "run_at": "document_idle" }],
+  "content_security_policy": { "extension_pages": "script-src 'self'; object-src 'none'" }
+}

@@ -1,35 +1,42 @@
 {
   "name": "rehearsal",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint .",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "test": "node --test tests/domain/observation-pattern-detection.test.ts tests/acceptance/canonical-workflow.test.ts",
+    "test": "node --test tests/domain/*.test.ts tests/acceptance/*.test.ts tests/infrastructure/*.test.ts",
     "test:domain": "node --test tests/domain/observation-pattern-detection.test.ts",
     "typecheck": "tsc --noEmit",
-    "check": "npm run typecheck && npm run lint && npm run format:check && npm test"
+    "check": "npm run typecheck && npm run lint && npm test && npm run build",
+    "verify": "npm test",
+    "verify:live": "node --env-file-if-exists=.env.local scripts/verify-live.mjs",
+    "verify:surfaces": "node --env-file-if-exists=.env.local scripts/verify-live.mjs surfaces",
+    "verify:ambiguous": "node --env-file-if-exists=.env.local scripts/verify-live.mjs ambiguous",
+    "verify:copilotkit": "node scripts/verify-stream.mjs",
+    "test:browser": "node scripts/verify-browser.mjs"
   },
   "dependencies": {
-    "next": "15.5.25",
-    "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "next": "16.3.4",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "zod": "3.25.76",
+    "lucide-react": "1.31.0"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "15.5.25",
-    "prettier": "^3.6.2",
-    "tailwindcss": "^4",
-    "typescript": "^5"
+    "@tailwindcss/postcss": "4.2.1",
+    "@types/node": "22.19.19",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "eslint": "9.39.4",
+    "eslint-config-next": "16.3.4",
+    "tailwindcss": "4.2.1",
+    "typescript": "5.9.3"
+  },
+  "engines": {
+    "node": ">=24.0.0"
   }
 }

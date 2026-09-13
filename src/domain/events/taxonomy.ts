@@ -34,7 +34,7 @@ export const SEMANTIC_ACTION_TAXONOMY = {
     latent: true,
   },
   classify_report: {
-    allowedApplications: ["mail", "system"],
+    allowedApplications: ["mail", "system", "issue_tracker"],
     defaultIntent: "Classify the issue for routing",
     defaultEstimatedEffortSeconds: 45,
     latent: true,
@@ -96,3 +96,4 @@ export function applicationSupportsAction(
 
   return allowedApplications.includes(application);
 }
+

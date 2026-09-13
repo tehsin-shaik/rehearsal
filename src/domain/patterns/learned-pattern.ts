@@ -45,4 +45,5 @@ export interface LearnedPattern {
   };
   readonly observedManualActionCount: number;
   readonly estimatedDurationSeconds: number;
+  readonly observedValues?: Readonly<Record<string, readonly unknown[]>>;
 }

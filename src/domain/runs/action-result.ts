@@ -6,6 +6,7 @@ export interface ActionResult {
   readonly completedAt: string | null;
   readonly idempotencyKey: string;
   readonly externalReference?: string;
+  readonly externalUrl?: string;
   readonly error?: {
     readonly code: string;
     readonly message: string;

@@ -23,6 +23,7 @@ export interface AgentRun {
     readonly status: "pending" | "approved" | "rejected";
     readonly approvedBy: string | null;
     readonly approvedAt: string | null;
+    readonly planDigest?: string;
   };
   readonly adaptations: readonly {
     readonly field: string;
