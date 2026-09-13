@@ -1,5 +1,5 @@
 export const brand = {
-  productName: "ElyesTehsin",
-  productSlug: "elyestehsin",
+  productName: "Rehearsal",
+  productSlug: "rehearsal",
   tagline: "Teach it through work. Approve before it acts.",
 } as const;
