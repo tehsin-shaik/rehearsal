@@ -1,3 +1,4 @@
+import { IntegrationError } from "../api-clients/http.ts";
 import { randomBytes, timingSafeEqual } from "node:crypto";
 import type { LearnedPattern } from "../../domain/patterns/learned-pattern.ts";
 import type { AgentRun } from "../../domain/runs/agent-run.ts";
@@ -88,6 +89,8 @@ export async function apiBoundary(fn: () => Promise<Response>): Promise<Response
     catch (e) {
         if (e instanceof ApiError)
             return Response.json({ error: e.message }, { status: e.status });
+        if (e instanceof IntegrationError)
+            return Response.json({ error: e.message, code: e.code }, { status: 422 });
         if (e instanceof Error && e.name === "ZodError")
             return Response.json({ error: "Invalid request schema." }, { status: 400 });
         return Response.json({ error: "The request could not be completed. Check server configuration and integration access." }, { status: 500 });

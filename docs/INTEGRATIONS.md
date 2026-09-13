@@ -73,7 +73,7 @@ Use one incoming webhook for every department channel that the workflow can reac
 SLACK_AREA_WEBHOOKS={"technical-support":"https://hooks.slack.com/services/REPLACE","billing-finance":"https://hooks.slack.com/services/REPLACE"}
 ```
 
-Replace each value with that channel's actual webhook. A legacy single `SLACK_WEBHOOK_URL` can cover only the technical-support route. Billing cannot silently fall back to the technical channel. Incoming webhooks are bound to their installed channel; the adapter requires the right mapping and an `ok` response. See [Slack's webhook documentation](https://docs.slack.dev/messaging/sending-messages-using-incoming-webhooks/).
+Replace each value with that channel's actual webhook. A legacy single `SLACK_WEBHOOK_URL` requires an explicit `NEXT_PUBLIC_SLACK_AREA_CHANNELS={"default":"technical-support"}` declaration and covers only that declared channel. Billing cannot silently fall back to the technical channel. Incoming webhooks are bound to their installed channel; the adapter requires the right mapping and an `ok` response. See [Slack's webhook documentation](https://docs.slack.dev/messaging/sending-messages-using-incoming-webhooks/).
 
 | Department | Owner | Channel key |
 | --- | --- | --- |
