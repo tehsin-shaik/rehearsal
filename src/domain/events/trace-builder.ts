@@ -8,6 +8,7 @@ import type { SemanticEvent } from "./semantic-event.ts";
 import type { WorkflowTrace } from "./workflow-trace.ts";
 
 export type TraceEventInput = Omit<SemanticEventInput, "traceId">;
+export const MAX_TRACE_EVENTS = 200;
 
 interface SemanticTraceBuilderOptions extends EventNormalizationOptions {
   readonly traceId: string;
@@ -71,7 +72,22 @@ export class SemanticTraceBuilder {
       );
       return inferredEvent === null ? [] : [inferredEvent];
     });
-    const appendedEvents = [...inferredEvents, observedEvent];
+    const knownEventIds = new Set(this.#events.map((event) => event.id));
+    const appendedEvents = [...inferredEvents, observedEvent].filter(
+      (event) => {
+        if (knownEventIds.has(event.id)) {
+          return false;
+        }
+
+        knownEventIds.add(event.id);
+        return true;
+      },
+    );
+    if (this.#events.length + appendedEvents.length > MAX_TRACE_EVENTS) {
+      throw new RangeError(
+        `A semantic trace cannot exceed ${MAX_TRACE_EVENTS} events.`,
+      );
+    }
     this.#events.push(...appendedEvents);
     return appendedEvents;
   }

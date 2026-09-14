@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "rehearsal",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-09-14",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS",
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "rehearsal",
+    },
+  ],
+  "vars": {
+    "DEMO_MODE": "true",
+    "NEXT_PUBLIC_DEMO_MODE": "true",
+    "COPILOTKIT_TELEMETRY_DISABLED": "true",
+  },
+}

@@ -12,7 +12,7 @@
 
 Rehearsal observes how a person completes a repetitive workflow, converts those observations into semantic traces, detects repetition, compiles a reusable workflow, and proposes future runs for human approval.
 
-The first release focuses on one constrained workflow: triaging inbound customer support reports across a mail inbox, issue tracker, and team chat. The product must demonstrate that it learns the process rather than memorizing values. After observing two similar manual runs, it should recognize the pattern, adapt a third unseen report to the correct department and owner, present a fully resolved “Ghost Run,” and make no external changes until a person approves it.
+The first release focuses on one constrained workflow: triaging inbound customer support reports across a mail inbox, issue tracker, and team chat. The product must demonstrate that it learns the process rather than memorizing values. After observing two similar manual runs, it should recognize the pattern, adapt a third unseen report to the correct department and owner, present a fully resolved “Preview Run,” and make no external changes until a person approves it.
 
 The MVP must work entirely offline and deterministically. Live AI and third-party integrations are later additions built behind the same interfaces.
 
@@ -41,7 +41,7 @@ Rehearsal should bridge that gap by learning semantic behavior, generalizing var
 2. Detect repetition only after sufficient evidence.
 3. Compile repeated traces into an inspectable workflow pattern.
 4. Generalize customers, issue details, departments, owners, and generated messages.
-5. Present a resolved Ghost Run before any consequential action occurs.
+5. Present a resolved Preview Run before any consequential action occurs.
 6. Require human approval for external creation, messaging, deletion, or other consequential actions.
 7. Execute safely, stop on failure, and resume without duplicating completed work.
 8. Run without accounts, API keys, or network access in Demo Mode.
@@ -92,7 +92,7 @@ The product will ship with three replica work surfaces: Mail, Issue Tracker, and
 5. The user inspects and activates the learned workflow.
 6. A third, unseen billing report arrives.
 7. Rehearsal classifies the report, adapts the department from technical support to billing, and routes ownership from Umar to Awaiz.
-8. A Ghost Run shows every proposed action, resolved value, permission, risk, and destination.
+8. A Preview Run shows every proposed action, resolved value, permission, risk, and destination.
 9. Nothing external changes until the user approves the run.
 10. After approval, the run creates and assigns the issue, drafts and sends the team notification, and replies to the customer.
 11. A separate ambiguous report must stop for human review rather than guess.
@@ -146,13 +146,13 @@ The product will ship with three replica work surfaces: Mail, Issue Tracker, and
 - **UND-04:** Require evidence to be traceable to literal source text.
 - **UND-05:** Route unresolved ownership to human review.
 
-### 9.5 Ghost Run Planning — P0
+### 9.5 Preview Run Planning — P0
 
-- **GHO-01:** Resolve all workflow variables against the new trigger before presentation.
-- **GHO-02:** Show the trigger, understanding, proposed actions, permissions, risk, adaptations, and expected destinations.
-- **GHO-03:** Mark unresolved actions as needing review.
-- **GHO-04:** Record adaptations such as department and owner changes with the applied rule.
-- **GHO-05:** Guarantee that opening or inspecting a Ghost Run has no external side effects.
+- **PRV-01:** Resolve all workflow variables against the new trigger before presentation.
+- **PRV-02:** Show the trigger, understanding, proposed actions, permissions, risk, adaptations, and expected destinations.
+- **PRV-03:** Mark unresolved actions as needing review.
+- **PRV-04:** Record adaptations such as department and owner changes with the applied rule.
+- **PRV-05:** Guarantee that opening or inspecting a Preview Run has no external side effects.
 
 ### 9.6 Policy and Approval — P0
 
@@ -187,7 +187,7 @@ The product will ship with three replica work surfaces: Mail, Issue Tracker, and
 - **UI-01:** Provide landing, onboarding, workspace, workflows, workflow detail, activity, and privacy views.
 - **UI-02:** Present Mail, Issue Tracker, and Team Chat replica applications in the workspace.
 - **UI-03:** Present the current workflow phase as a visible narrative rail.
-- **UI-04:** Present pattern evidence, memory map, live timeline, and Ghost Run inspection surfaces.
+- **UI-04:** Present pattern evidence, memory map, live timeline, and Preview Run inspection surfaces.
 - **UI-05:** Keep the primary demo flow usable within one desktop viewport at common presentation sizes.
 - **UI-06:** Clearly distinguish observed, inferred, planned, executing, completed, failed, and review-required states.
 - **UI-07:** Never imply an external action occurred before an adapter confirms it.
@@ -215,11 +215,11 @@ The product will ship with three replica work surfaces: Mail, Issue Tracker, and
 
 ### Main States
 
-`idle -> observing -> comparing -> pattern_discovered -> agent_ready -> trigger_detected -> planning -> ghost_run -> executing -> completed`
+`idle -> observing -> comparing -> pattern_discovered -> agent_ready -> trigger_detected -> planning -> preview_ready -> executing -> completed`
 
 Alternate states include `needs_review`, `cancelled`, and `failed` with resumable execution.
 
-### Ghost Run Information Hierarchy
+### Preview Run Information Hierarchy
 
 1. What triggered the run.
 2. What Rehearsal understood and the confidence.
@@ -271,7 +271,7 @@ src/
   ui/
     workspace/
     workflows/
-    ghost-run/
+    preview-run/
     timeline/
   demo/
     fixtures/
@@ -317,7 +317,7 @@ app/api/
 ### Future Product Metrics
 
 - Percentage of proposed patterns activated by users.
-- Percentage of Ghost Runs approved without edits.
+- Percentage of Preview Runs approved without edits.
 - Human actions and time saved per completed run.
 - Rate of review-required and corrected classifications.
 - Execution failure and duplicate-prevention rates.
@@ -331,7 +331,7 @@ The MVP is complete when all of the following are true:
 2. Two similar traces with a small sequence variation create a pattern above the configured threshold.
 3. The compiler produces a five-stage workflow and does not memorize customer or owner names.
 4. A new billing report is classified as billing and assigned to Awaiz through the routing rule.
-5. The Ghost Run contains no unresolved variable placeholders.
+5. The Preview Run contains no unresolved variable placeholders.
 6. An unapproved external creation or message is blocked.
 7. Payment is blocked even when a run is approved.
 8. An approved run creates one issue, assigns it, sends one team notification, and replies to the customer.
@@ -366,7 +366,7 @@ The MVP is complete when all of the following are true:
 
 ### Milestone 4 — Workspace UI
 
-- Build the three replica applications, workflow rail, action panel, Ghost Run, memory map, and timeline.
+- Build the three replica applications, workflow rail, action panel, Preview Run, memory map, and timeline.
 - Add onboarding, workflow inspection, activity, privacy, and demo controls.
 
 ### Milestone 5 — Hardening

@@ -1,0 +1,51 @@
+{
+  "manifest_version": 3,
+  "name": "Rehearsal Semantic Observer",
+  "version": "1.0.0",
+  "description": "Observes supported work as privacy-filtered semantic events for Rehearsal.",
+  "minimum_chrome_version": "109",
+  "permissions": ["activeTab", "alarms", "storage"],
+  "host_permissions": [
+    "http://localhost/*",
+    "http://127.0.0.1/*",
+    "https://mail.google.com/*",
+    "https://*.atlassian.net/*",
+    "https://app.clickup.com/*"
+  ],
+  "optional_host_permissions": ["https://*/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Rehearsal Semantic Observer",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/rehearsal-16.png",
+      "32": "icons/rehearsal-32.png",
+      "48": "icons/rehearsal-48.png",
+      "128": "icons/rehearsal-128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/rehearsal-16.png",
+    "32": "icons/rehearsal-32.png",
+    "48": "icons/rehearsal-48.png",
+    "128": "icons/rehearsal-128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://mail.google.com/*",
+        "https://*.atlassian.net/*",
+        "https://app.clickup.com/*"
+      ],
+      "js": [
+        "extractors/gmail.js",
+        "extractors/jira.js",
+        "extractors/clickup.js",
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}

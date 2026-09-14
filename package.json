@@ -7,22 +7,48 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "build:cloudflare": "opennextjs-cloudflare build",
+    "preview:cloudflare": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy:cloudflare": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "extension:icons": "node extension/scripts/generate-icons.mjs",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "node --test tests/domain/observation-pattern-detection.test.ts tests/acceptance/canonical-workflow.test.ts",
-    "test:domain": "node --test tests/domain/observation-pattern-detection.test.ts",
+    "test": "node --test tests/domain/observation-pattern-detection.test.ts tests/domain/pattern-compilation.test.ts tests/domain/deterministic-understanding.test.ts tests/domain/preview-run-planning.test.ts tests/domain/policy.test.ts tests/application/execution-engine.test.ts tests/application/state-machine.test.ts tests/application/application-store.test.ts tests/infrastructure/server-boundaries.test.ts tests/infrastructure/live-adapters.test.ts tests/extension/extension-boundaries.test.ts tests/acceptance/canonical-workflow.test.ts",
+    "test:execution": "node --test tests/application/execution-engine.test.ts",
+    "test:state": "node --test tests/application/state-machine.test.ts tests/application/application-store.test.ts",
+    "test:extension": "node --test tests/extension/extension-boundaries.test.ts",
+    "test:server": "node --test tests/infrastructure/server-boundaries.test.ts tests/infrastructure/live-adapters.test.ts",
+    "test:domain": "node --test tests/domain/observation-pattern-detection.test.ts tests/domain/pattern-compilation.test.ts tests/domain/deterministic-understanding.test.ts tests/domain/preview-run-planning.test.ts tests/domain/policy.test.ts",
+    "test:compilation": "node --test tests/domain/pattern-compilation.test.ts",
+    "test:preview": "node --test tests/domain/preview-run-planning.test.ts",
+    "test:policy": "node --test tests/domain/policy.test.ts",
+    "test:understanding": "node --test tests/domain/deterministic-understanding.test.ts",
     "typecheck": "tsc --noEmit",
-    "check": "npm run typecheck && npm run lint && npm run format:check && npm test"
+    "verify": "node scripts/verify-offline.ts",
+    "verify:live": "node scripts/verify-live.ts",
+    "verify:ambiguous": "node scripts/verify-ambiguous.ts",
+    "verify:copilotkit": "node scripts/verify-copilotkit.ts",
+    "verify:surfaces": "node scripts/verify-surfaces.ts",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm test && npm run verify && npm run verify:copilotkit"
   },
   "dependencies": {
+    "@copilotkit/runtime": "^1.71.1",
+    "@xyflow/react": "^12.11.6",
+    "hono": "^4.13.7",
+    "imapflow": "^2.0.2",
+    "mailparser": "^3.9.26",
     "next": "15.5.25",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "zod": "^4.6.5",
+    "zustand": "^5.0.15"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@opennextjs/cloudflare": "^1.20.6",
     "@tailwindcss/postcss": "^4",
+    "@types/mailparser": "^3.4.6",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -30,6 +56,7 @@
     "eslint-config-next": "15.5.25",
     "prettier": "^3.6.2",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wrangler": "^4.131.1"
   }
 }

@@ -2,7 +2,9 @@ import { strict as assert } from "node:assert";
 import { test } from "node:test";
 
 import {
+  deduplicateSemanticEvents,
   normalizeSemanticEvent,
+  MAX_TRACE_EVENTS,
   SEMANTIC_ACTION_TAXONOMY,
   SemanticTraceBuilder,
   type SemanticEventInput,
@@ -59,6 +61,59 @@ test("normalization is deterministic and associates the active trace", () => {
   assert.equal(firstEvent.traceId, BASE_EVENT_INPUT.traceId);
   assert.equal(firstEvent.intent, "Create a support issue");
   assert.equal(firstEvent.confidence, 1);
+});
+
+test("a trace stores each deterministic event identity only once", () => {
+  const builder = new SemanticTraceBuilder({
+    traceId: "trace-idempotent-events",
+    startedAt: "2026-02-01T08:00:00.000Z",
+  });
+  const input = {
+    occurredAt: "2026-02-01T08:00:01.000Z",
+    sourceApplication: "mail",
+    action: "report_received",
+    payload: { reportId: "report-001", subject: "Account problem" },
+  } as const;
+
+  assert.equal(builder.append(input).length, 1);
+  assert.deepEqual(builder.append(input), []);
+  assert.equal(builder.toTrace().events.length, 1);
+});
+
+test("semantic event identity sanitization removes historical duplicates", () => {
+  const event = normalizeSemanticEvent({
+    ...BASE_EVENT_INPUT,
+    payload: { reportId: "report-001" },
+  });
+
+  assert.ok(event);
+  assert.deepEqual(deduplicateSemanticEvents([event, event]), [event]);
+});
+
+test("active traces reject events beyond the bounded session limit", () => {
+  const builder = new SemanticTraceBuilder({
+    traceId: "trace-bounded",
+    startedAt: "2026-02-01T08:00:00.000Z",
+  });
+  for (let index = 0; index < MAX_TRACE_EVENTS; index += 1) {
+    builder.append({
+      occurredAt: new Date(Date.UTC(2026, 1, 1, 8, 0, index)).toISOString(),
+      sourceApplication: "mail",
+      action: "read_report",
+      payload: { reportId: `report-${index}` },
+    });
+  }
+
+  assert.throws(
+    () =>
+      builder.append({
+        occurredAt: "2026-02-01T09:00:00.000Z",
+        sourceApplication: "mail",
+        action: "read_report",
+        payload: { reportId: "report-overflow" },
+      }),
+    /cannot exceed 200 events/,
+  );
 });
 
 test("sensitive fields and sensitive string values are removed recursively", () => {

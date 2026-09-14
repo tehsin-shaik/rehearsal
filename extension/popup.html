@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rehearsal Semantic Observer</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main>
+      <header class="brand">
+        <span class="orb" aria-hidden="true"><span></span></span>
+        <div>
+          <strong>rehearsal</strong>
+          <small>Semantic Observer</small>
+        </div>
+        <label class="switch">
+          <input
+            id="enabled"
+            type="checkbox"
+            aria-label="Enable semantic observation"
+          />
+          <span></span>
+        </label>
+      </header>
+
+      <section class="status-card" aria-live="polite">
+        <div class="status-line">
+          <span id="status-dot" class="status-dot"></span>
+          <div>
+            <strong id="status-label">Checking API</strong>
+            <small id="status-detail">Loading the local observer state</small>
+          </div>
+        </div>
+        <div class="metrics">
+          <div><strong id="pending-count">0</strong><span>Pending</span></div>
+          <div>
+            <strong id="delivered-count">0</strong><span>Delivered</span>
+          </div>
+        </div>
+      </section>
+
+      <form id="endpoint-form">
+        <label for="endpoint">Rehearsal API endpoint</label>
+        <div class="endpoint-row">
+          <input
+            id="endpoint"
+            name="endpoint"
+            type="url"
+            spellcheck="false"
+            autocomplete="off"
+            required
+          />
+          <button type="submit">Save</button>
+        </div>
+        <small id="endpoint-message"></small>
+      </form>
+
+      <section class="recent-section">
+        <div class="section-heading">
+          <strong>Recent semantic events</strong>
+          <span id="event-count">0</span>
+        </div>
+        <ol id="recent-events"></ol>
+        <p id="empty-state">No semantic events observed yet.</p>
+      </section>
+
+      <button id="finish" class="finish-button" type="button">
+        Finish observation and deliver events
+      </button>
+      <p class="privacy">
+        Rehearsal ignores credentials, payment data, coordinates, selectors,
+        copied text, and raw keystrokes. Supported pages are observed as
+        semantic actions only.
+      </p>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>

@@ -1,0 +1,363 @@
+:root {
+  color-scheme: dark;
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    "Segoe UI Variable Display",
+    "Segoe UI",
+    sans-serif;
+  background: #04060a;
+  color: #e6edf6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  width: 360px;
+  min-height: 500px;
+  margin: 0;
+  background:
+    radial-gradient(
+      circle at 12% 2%,
+      rgba(56, 220, 255, 0.12),
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at 90% 5%,
+      rgba(139, 124, 255, 0.1),
+      transparent 34%
+    ),
+    #04060a;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid #38dcff;
+  outline-offset: 2px;
+}
+
+main {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+}
+
+.brand {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand strong {
+  display: block;
+  color: #f2f6fb;
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+.brand small,
+.status-line small,
+form small {
+  display: block;
+  color: #7386a0;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.orb {
+  display: grid;
+  width: 29px;
+  height: 29px;
+  place-items: center;
+  border: 1px solid rgba(127, 233, 255, 0.55);
+  border-radius: 50%;
+  background: rgba(56, 220, 255, 0.06);
+  box-shadow: 0 0 18px rgba(56, 220, 255, 0.14);
+}
+
+.orb span {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #7fe9ff, #8b7cff);
+  box-shadow: 0 0 10px rgba(127, 233, 255, 0.45);
+}
+
+.switch {
+  position: relative;
+  width: 35px;
+  height: 20px;
+}
+
+.switch input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.switch span {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 12px;
+  background: #121927;
+  cursor: pointer;
+}
+
+.switch span::after {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #7386a0;
+  content: "";
+  transition: 160ms ease;
+}
+
+.switch input:checked + span {
+  border-color: rgba(56, 220, 255, 0.45);
+  background: rgba(15, 189, 228, 0.16);
+}
+
+.switch input:checked + span::after {
+  transform: translateX(15px);
+  background: #38dcff;
+}
+
+.status-card,
+form,
+.recent-section {
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 10px;
+  background: rgba(11, 16, 25, 0.9);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.035);
+}
+
+.status-card {
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+}
+
+.status-line {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.status-line strong {
+  display: block;
+  font-size: 12px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #7386a0;
+  box-shadow: 0 0 0 3px rgba(115, 134, 160, 0.08);
+}
+
+.status-dot.connected {
+  background: #2dd4a7;
+  box-shadow: 0 0 0 3px rgba(45, 212, 167, 0.1);
+}
+
+.status-dot.delivering {
+  background: #38dcff;
+  box-shadow: 0 0 0 3px rgba(56, 220, 255, 0.1);
+}
+
+.status-dot.failed {
+  background: #ff6b6b;
+  box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 1px solid rgba(255, 255, 255, 0.055);
+  padding-top: 10px;
+}
+
+.metrics div {
+  display: grid;
+  gap: 2px;
+}
+
+.metrics div + div {
+  border-left: 1px solid rgba(255, 255, 255, 0.055);
+  padding-left: 12px;
+}
+
+.metrics strong {
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  color: #f2f6fb;
+  font-size: 16px;
+}
+
+.metrics span {
+  color: #7386a0;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+form {
+  display: grid;
+  gap: 7px;
+  padding: 12px;
+}
+
+form label,
+.section-heading strong {
+  color: #c7d3e3;
+  font-size: 10px;
+  font-weight: 620;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.endpoint-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px;
+}
+
+.endpoint-row input {
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 6px;
+  padding: 8px 9px;
+  background: #070a11;
+  color: #e6edf6;
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  font-size: 10px;
+}
+
+.endpoint-row button,
+.finish-button {
+  border: 1px solid rgba(56, 220, 255, 0.28);
+  border-radius: 6px;
+  background: rgba(15, 189, 228, 0.13);
+  color: #7fe9ff;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 620;
+}
+
+.endpoint-row button {
+  padding: 0 11px;
+}
+
+.recent-section {
+  min-height: 144px;
+  overflow: hidden;
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+  padding: 10px 12px;
+}
+
+.section-heading span {
+  color: #566a84;
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  font-size: 10px;
+}
+
+#recent-events {
+  max-height: 160px;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  list-style: none;
+}
+
+#recent-events li {
+  display: grid;
+  grid-template-columns: 7px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 8px 12px;
+}
+
+#recent-events li::before {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #f5b544;
+  content: "";
+}
+
+#recent-events li.delivered::before {
+  background: #2dd4a7;
+}
+
+#recent-events strong {
+  display: block;
+  color: #c7d3e3;
+  font-size: 10px;
+  font-weight: 560;
+}
+
+#recent-events small {
+  color: #566a84;
+  font-size: 9px;
+}
+
+#recent-events time {
+  color: #566a84;
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  font-size: 9px;
+}
+
+#empty-state {
+  margin: 0;
+  padding: 30px 12px;
+  color: #566a84;
+  font-size: 10px;
+  text-align: center;
+}
+
+.finish-button {
+  min-height: 36px;
+}
+
+.finish-button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.privacy {
+  margin: 0;
+  color: #566a84;
+  font-size: 9px;
+  line-height: 1.55;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

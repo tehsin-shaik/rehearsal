@@ -82,7 +82,11 @@ function buildSupportTriageTrace(
     sourceApplication: "team_chat",
     action: "send_team_notification",
     intent: "Send a team notification",
-    payload: { department: "technical_support", owner: "Umar" },
+    payload: {
+      channel: "#technical-support",
+      department: "technical_support",
+      owner: "Umar",
+    },
     estimatedEffortSeconds: 45,
   });
 

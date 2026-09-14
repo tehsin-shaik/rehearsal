@@ -12,3 +12,18 @@ export interface SemanticEvent {
   readonly origin: "observed" | "inferred" | "executed";
   readonly estimatedEffortSeconds: number;
 }
+
+export function deduplicateSemanticEvents(
+  events: readonly SemanticEvent[],
+): readonly SemanticEvent[] {
+  const eventIds = new Set<string>();
+
+  return events.filter((event) => {
+    if (eventIds.has(event.id)) {
+      return false;
+    }
+
+    eventIds.add(event.id);
+    return true;
+  });
+}

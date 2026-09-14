@@ -1,4 +1,8 @@
 .next
+.open-next
+.wrangler
 coverage
 node_modules
+extension/icons
+docs/REHEARSAL-PRD.md
 package-lock.json

@@ -9,7 +9,8 @@ export interface AgentRun {
   readonly triggerReportId: string;
   readonly status:
     | "planning"
-    | "ghost_run"
+    | "preview"
+    | "preview_ready"
     | "needs_review"
     | "approved"
     | "executing"

@@ -5,7 +5,10 @@ export {
 } from "./event-normalizer.ts";
 export { inferLatentStepInputs } from "./latent-step-inference.ts";
 export { redactPayload } from "./redaction.ts";
-export type { SemanticEvent } from "./semantic-event.ts";
+export {
+  deduplicateSemanticEvents,
+  type SemanticEvent,
+} from "./semantic-event.ts";
 export {
   applicationSupportsAction,
   isSemanticAction,
@@ -15,5 +18,9 @@ export {
   type SemanticAction,
   type SourceApplication,
 } from "./taxonomy.ts";
-export { SemanticTraceBuilder, type TraceEventInput } from "./trace-builder.ts";
+export {
+  MAX_TRACE_EVENTS,
+  SemanticTraceBuilder,
+  type TraceEventInput,
+} from "./trace-builder.ts";
 export type { WorkflowTrace } from "./workflow-trace.ts";

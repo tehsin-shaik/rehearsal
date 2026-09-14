@@ -17,7 +17,8 @@ export interface LearnedPattern {
   }[];
   readonly variables: readonly {
     readonly field: string;
-    readonly source: "extracted" | "classified" | "routed" | "generated";
+    readonly source:
+      "authored" | "extracted" | "classified" | "routed" | "generated";
     readonly dependsOn?: string;
     readonly rationale: string;
   }[];

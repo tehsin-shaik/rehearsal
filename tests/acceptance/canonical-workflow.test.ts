@@ -66,13 +66,13 @@ test("learns, previews, approves, executes, resumes, and requests review", async
   assert.equal(billingUnderstanding.owner, "Awaiz");
 
   const billingRun = planRun(pattern, billingUnderstanding);
-  assert.equal(billingRun.status, "ghost_run");
+  assert.equal(billingRun.status, "preview_ready");
   assert.equal(
     billingRun.plannedActions.some((action) =>
       JSON.stringify(action.resolvedInput).includes("{{"),
     ),
     false,
-    "the Ghost Run must not contain unresolved placeholders",
+    "the Preview Run must not contain unresolved placeholders",
   );
 
   await assert.rejects(

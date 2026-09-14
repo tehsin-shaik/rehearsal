@@ -1,3 +1,15 @@
+import type { Department } from "./team-routing.ts";
+
+export type IssueCategory =
+  | "authentication"
+  | "performance"
+  | "data"
+  | "api_timeout"
+  | "billing"
+  | "unresolved";
+
+export type IssueSeverity = "low" | "medium" | "high" | "unresolved";
+
 export interface IssueUnderstanding {
   readonly reportId: string;
   readonly customer: {
@@ -7,10 +19,9 @@ export interface IssueUnderstanding {
   readonly issue: {
     readonly title: string;
     readonly description: string;
-    readonly category:
-      "authentication" | "api_timeout" | "billing" | "unresolved";
-    readonly department: "technical_support" | "billing" | "unresolved";
-    readonly severity: "low" | "medium" | "high" | "unresolved";
+    readonly category: IssueCategory;
+    readonly department: Department;
+    readonly severity: IssueSeverity;
     readonly labels: readonly string[];
   };
   readonly owner: string | null;

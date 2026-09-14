@@ -2,79 +2,98 @@
 
 > Teach it through work. Approve before it acts.
 
-Rehearsal is a human-supervised workflow-learning agent. It observes semantic work, detects repeated workflows, generalizes changing values, and prepares a resolved Ghost Run for review before any consequential action can occur.
+Rehearsal is a human-supervised workflow-learning agent. It observes semantic work, detects repeated behavior, compiles generalized workflows, prepares a fully resolved Preview Run, and keeps consequential actions blocked until a person approves them.
 
-The MVP is offline-first and deterministic. Its canonical workflow triages customer reports across mail, an issue tracker, and team chat without requiring accounts, API keys, or live integrations.
+The default Demo Mode is deterministic, offline, and requires no credentials. Optional live mode adds model-assisted understanding, privacy-filtered research, connected Gmail and tracker surfaces, AG-UI plan streaming, and typed external adapters without changing the planner, policy, or executor contracts.
 
-## Current status
+## Quick Start
 
-The current foundation provides:
-
-- Next.js App Router with React, strict TypeScript, and Tailwind CSS.
-- ESLint and Prettier configuration.
-- Framework-independent domain contracts.
-- Deterministic semantic normalization, redaction, and latent-step inference.
-- Weighted trace comparison and pattern-candidate detection.
-- Deterministic report and workflow-trace fixtures.
-- A headless acceptance test for the complete canonical workflow.
-- Typed entry points for later engine phases that deliberately throw `NotImplementedError`.
-
-The domain engine, state-machine orchestration, interface, API routes, live integrations, and browser extension are intentionally deferred to later milestones.
-
-## Setup
-
-Use Node.js 24 or newer so the built-in test runner can execute TypeScript directly.
+Use Node.js 22.6 or newer; Node.js 24 LTS is recommended.
 
 ```bash
 npm install
 npm run dev
 ```
 
-No `.env` file is required for Milestone 0.
+Open `http://localhost:3000/workspace`. No `.env` file is needed for Demo Mode.
 
-## Commands
+## Product Flow
 
-| Command                | Purpose                                                           |
-| ---------------------- | ----------------------------------------------------------------- |
-| `npm run dev`          | Start the local Next.js development server.                       |
-| `npm run typecheck`    | Check the application and acceptance test with strict TypeScript. |
-| `npm run lint`         | Run ESLint for Next.js and TypeScript.                            |
-| `npm run format:check` | Verify Prettier formatting.                                       |
-| `npm run test:domain`  | Run focused observation and pattern-detection tests.              |
-| `npm test`             | Run the focused domain tests and canonical acceptance sequence.   |
-| `npm run check`        | Run type checking, linting, formatting, and tests.                |
+`Observe → Detect → Compile → Preview Run → Approve → Execute`
 
-## Acceptance test
+1. Run the first support-triage observation. One trace remains insufficient.
+2. Run the varied second observation. Rehearsal detects and compiles a pattern.
+3. Inspect and activate the learned workflow.
+4. Deliver the unseen billing report. The Preview Run resolves Billing and Awaiz.
+5. Review every action, permission, adaptation, evidence item, and target.
+6. Approve once. Adapter-confirmed execution creates one issue, assigns it, sends one team notification, and replies to the customer.
+7. Use the failure control to verify safe stop-and-resume behavior without duplicate issue creation.
+8. Deliver the ambiguous report to verify mandatory human owner review.
 
-The acceptance test describes the intended end-to-end behavior:
+The hidden demo console opens with `Ctrl/Cmd + Shift + D`. The command palette opens with `Ctrl/Cmd + K`.
 
-1. One trace does not create a pattern.
-2. A varied second trace creates a generalized pattern.
-3. A new billing report routes to Awaiz.
-4. Execution remains blocked until approval.
-5. Approved execution creates one issue and sends one notification.
-6. A failed run resumes without creating a duplicate issue.
-7. Ambiguous input requires human review.
+## Routes
 
-Observation and pattern detection have focused passing tests. The full acceptance test currently reaches pattern compilation and then fails at its deliberate `NotImplementedError`. Compilation, understanding, planning, policy, and execution remain later milestones.
+- `/` — product overview and behavior-to-agent flow
+- `/onboarding` — observation-source and privacy setup
+- `/workspace` — replica or connected operational workspace
+- `/workflows` — learned workflow catalog
+- `/workflows/[id]` — compiled pattern, evidence, variables, rules, and memory map
+- `/activity` — observed traces and adapter-confirmed runs
+- `/privacy` — observation controls, policy, targets, and prototype limits
 
-## Architecture boundaries
+## Architecture
 
-- `src/domain` contains framework-independent contracts and pure domain logic.
-- `src/application/engine` exposes the headless engine API.
-- `src/application/state-machine` is reserved for application orchestration.
-- `src/infrastructure/adapters` is the boundary for all external systems.
-- `src/demo/fixtures` contains deterministic offline inputs.
-- `src/app` contains only the minimal Next.js scaffold.
+- `src/domain` contains framework-independent events, pattern detection and compilation, understanding, policy, planning, and run contracts.
+- `src/application` contains the headless executor, explicit phase machine, focused Zustand slices, atomic commands, and selectors.
+- `src/infrastructure` contains Zod-validated HTTP boundaries, model and research clients, mail surfaces, AG-UI planning, and typed adapters.
+- `src/demo` contains deterministic fixtures, in-memory adapters, failure injection, and the demo director.
+- `src/components` and `src/app` contain the responsive interface and Node-runtime API routes.
+- `extension` contains the Manifest V3 semantic observer and its independent privacy boundary.
 
-Domain code must not depend on React or Next.js. Policy and execution semantics belong in the headless engine rather than interface state. Demo and future live modes must use the same planner, policy, and executor contracts.
+See `docs/ARCHITECTURE.md` for the full diagram and invariants.
 
-`SemanticEvent.action` is now backed by the exported fixed taxonomy. `WorkflowTrace.status` adds `paused` so observation can stop and resume without losing its active trace; existing contract fields and status values remain unchanged.
+## Validation
 
-## Branding
+```bash
+npm run check
+npm run build
+```
 
-Runtime product naming and metadata are centralized in `src/config/brand.ts`.
+Important commands:
 
-## Specification
+| Command                     | Purpose                                                                                   |
+| --------------------------- | ----------------------------------------------------------------------------------------- |
+| `npm test`                  | Run domain, execution, state, server, extension, and acceptance tests.                    |
+| `npm run verify`            | Exercise the complete offline behavior-to-agent pipeline and prove zero network requests. |
+| `npm run verify:copilotkit` | Validate structured AG-UI action and run proposals.                                       |
+| `npm run verify:live`       | Verify configured model and Exa services; skip cleanly without credentials.               |
+| `npm run verify:surfaces`   | Read from configured mail and tracker surfaces without creating records.                  |
+| `npm run verify:ambiguous`  | Verify and revoke a disposable sandbox only with explicit write authorization.            |
+| `npm run typecheck`         | Check strict TypeScript across source, tests, scripts, and deployment config.             |
+| `npm run lint`              | Run the Next.js and TypeScript ESLint rules.                                              |
+| `npm run format:check`      | Verify Prettier formatting.                                                               |
+| `npm run build:cloudflare`  | Produce an OpenNext Cloudflare Worker build without deploying it.                         |
 
-See `docs/REHEARSAL-PRD.md` for the product requirements, acceptance criteria, and delivery plan.
+## Live Mode
+
+Copy `.env.example` to `.env.local`, set both `DEMO_MODE=false` and `NEXT_PUBLIC_DEMO_MODE=false`, and configure only the providers you intend to use. Secrets remain server-side. Tracker precedence is ClickUp, Jira, Ambiguous workspace, GitHub, then Ambiguous sandbox unless `TRACKER` explicitly selects a provider.
+
+Ordinary verification is read-only. Any verification that creates an external resource requires `REHEARSAL_ALLOW_EXTERNAL_WRITES=true`.
+
+See `docs/INTEGRATIONS.md` and `docs/KEYS.md` before enabling live mode.
+
+## Browser Extension
+
+1. Run `npm run extension:icons` if icon assets need regeneration.
+2. Open `chrome://extensions`, enable Developer mode, and choose **Load unpacked**.
+3. Select the repository's `extension` directory.
+4. Keep the default `http://localhost:3000` endpoint or authorize an HTTPS deployment in the popup.
+
+The extension records supported semantic actions only. It does not send rendered Gmail bodies, coordinates, selectors, copied text, raw keys, credentials, authentication data, or payment information. The server validates and scrubs every event again.
+
+## Prototype Limits
+
+The MVP does not provide general operating-system control, arbitrary workflow learning, production encryption, multi-user authorization, or durable application-state persistence. Live API routes are single-user prototype boundaries and must not be exposed publicly without an authentication and authorization layer. Server idempotency is process-local, so production deployments need durable distributed idempotency before enabling consequential writes. Local Gmail OAuth token storage is a documented single-user prototype mechanism. Cloudflare deployment is configured for Demo Mode by default; Node-hosted live mode is recommended for IMAP and local OAuth token storage.
+
+Further documentation is in `docs/DEMO.md`, `docs/PRIVACY.md`, `docs/INTEGRATIONS.md`, `docs/DEPLOYMENT.md`, `docs/TESTING.md`, and `docs/KEYS.md`. The authoritative product specification is `docs/REHEARSAL-PRD.md`.
