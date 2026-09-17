@@ -63,7 +63,7 @@ test("learns, previews, approves, executes, resumes, and requests review", async
 
   const billingUnderstanding = understandReport(duplicateBillingChargeReport);
   assert.equal(billingUnderstanding.issue.department, "billing");
-  assert.equal(billingUnderstanding.owner, "Awaiz");
+  assert.equal(billingUnderstanding.owner, "Tehsin");
 
   const billingRun = planRun(pattern, billingUnderstanding);
   assert.equal(billingRun.status, "preview_ready");

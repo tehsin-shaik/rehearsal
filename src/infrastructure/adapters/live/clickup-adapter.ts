@@ -22,6 +22,12 @@ import {
   successfulActionResult,
 } from "./adapter-result.ts";
 
+const clickUpAssigneeSchema = z.object({
+  id: z.union([z.string(), z.number()]).transform(String).optional(),
+  username: z.string().optional(),
+  email: z.string().optional(),
+});
+
 const taskSchema = z.object({
   id: z.union([z.string(), z.number()]).transform(String),
   custom_id: z.string().nullable().optional(),
@@ -31,15 +37,7 @@ const taskSchema = z.object({
     .array(z.object({ name: z.string() }))
     .optional()
     .default([]),
-  assignees: z
-    .array(
-      z.object({
-        username: z.string().optional(),
-        email: z.string().optional(),
-      }),
-    )
-    .optional()
-    .default([]),
+  assignees: z.array(clickUpAssigneeSchema).optional().default([]),
 });
 
 const tasksSchema = z.object({ tasks: z.array(taskSchema) });
@@ -80,6 +78,32 @@ function clickUpPriority(severity: IssueCreateInput["severity"]): number {
     case "unresolved":
       return 4;
   }
+}
+
+function resolvedTeamOwner(
+  assignee: z.infer<typeof clickUpAssigneeSchema> | undefined,
+  ownerIdentifiers: Readonly<Record<string, string>>,
+): TeamOwner | null {
+  if (assignee === undefined) {
+    return null;
+  }
+
+  if (assignee.id !== undefined) {
+    const mappedName = Object.entries(ownerIdentifiers).find(
+      ([, identifier]) => identifier === assignee.id,
+    )?.[0];
+    if (mappedName !== undefined && isTeamOwner(mappedName)) {
+      return mappedName;
+    }
+  }
+
+  const candidates = [assignee.username, assignee.email?.split("@")[0]];
+  return (
+    candidates.find(
+      (candidate): candidate is TeamOwner =>
+        candidate !== undefined && isTeamOwner(candidate),
+    ) ?? null
+  );
 }
 
 export class ClickUpIssueTrackerAdapter implements IssueTrackerAdapter {
@@ -249,7 +273,6 @@ export class ClickUpIssueTrackerAdapter implements IssueTrackerAdapter {
     const parsed = tasksSchema.parse(response);
     return parsed.tasks.slice(0, 20).map((task) => {
       const key = task.custom_id ?? task.id;
-      const ownerName = task.assignees[0]?.username;
       return {
         issue: {
           id: task.id,
@@ -258,8 +281,7 @@ export class ClickUpIssueTrackerAdapter implements IssueTrackerAdapter {
           url: task.url ?? null,
         },
         title: task.name,
-        owner:
-          ownerName !== undefined && isTeamOwner(ownerName) ? ownerName : null,
+        owner: resolvedTeamOwner(task.assignees[0], this.#ownerIdentifiers),
         labels: task.tags.map((tag) => tag.name),
       };
     });

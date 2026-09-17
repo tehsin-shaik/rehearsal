@@ -21,7 +21,12 @@ import type { MailMessage } from "../../domain/understanding/mail-message.ts";
 import type { IssueUnderstanding } from "../../domain/understanding/issue-understanding.ts";
 import type { RunResearchReference } from "../../domain/runs/preview-run-types.ts";
 import type { CompiledLearnedPattern } from "../../domain/patterns/compilation-types.ts";
-import type { ExecutionAdapterBundle } from "../../infrastructure/adapters/contracts.ts";
+import type { ActionResult } from "../../domain/runs/action-result.ts";
+import type {
+  ExecutionAdapterBundle,
+  MessageDeliveryResultData,
+  TeamMessageInput,
+} from "../../infrastructure/adapters/contracts.ts";
 
 export type RehearsalStore = StoreApi<RehearsalState>;
 
@@ -69,6 +74,9 @@ export interface ApplicationCommandOptions {
   readonly createExecutionAdapters?: (
     run: PreviewRun,
   ) => ExecutionAdapterBundle;
+  readonly sendManualTeamMessage?: (
+    input: TeamMessageInput,
+  ) => Promise<ActionResult<MessageDeliveryResultData>>;
 }
 
 export interface ApplicationCommands {
@@ -88,7 +96,7 @@ export interface ApplicationCommands {
   createIssueManually(): void;
   openTeamChannel(channel: string): void;
   draftNotification(message?: string): void;
-  sendNotificationManually(): void;
+  sendNotificationManually(): Promise<void>;
   replyToCustomerManually(message?: string): Promise<void>;
   inspectDiscoveredPattern(patternId?: string): void;
   activatePattern(patternId?: string): void;

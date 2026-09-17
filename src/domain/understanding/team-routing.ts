@@ -11,12 +11,12 @@ export const DEPARTMENTS = [
 export type Department = (typeof DEPARTMENTS)[number];
 
 export const TEAM_OWNERS = [
-  "Awaiz",
-  "Umar",
-  "Bilal",
-  "Obaid",
-  "Noor",
-  "Huda",
+  "Tehsin",
+  "Elyes",
+  "Raghad",
+  "Ayah",
+  "Sara",
+  "Alex",
 ] as const;
 
 export type TeamOwner = (typeof TEAM_OWNERS)[number];
@@ -31,39 +31,39 @@ interface TeamRouteConfiguration {
 export const TEAM_ROUTING_CONFIG = {
   billing: {
     displayName: "Billing",
-    owner: "Awaiz",
-    channel: "billing-finance",
-    rule: "billing -> Awaiz",
+    owner: "Tehsin",
+    channel: "#billing-finance",
+    rule: "billing -> Tehsin",
   },
   technical_support: {
     displayName: "Technical Support",
-    owner: "Umar",
+    owner: "Elyes",
     channel: "#technical-support",
-    rule: "technical support -> Umar",
+    rule: "technical support -> Elyes",
   },
   sales: {
     displayName: "Sales",
-    owner: "Bilal",
+    owner: "Raghad",
     channel: "#sales-support",
-    rule: "sales -> Bilal",
+    rule: "sales -> Raghad",
   },
   logistics: {
     displayName: "Logistics",
-    owner: "Obaid",
+    owner: "Ayah",
     channel: "#logistics-support",
-    rule: "logistics -> Obaid",
+    rule: "logistics -> Ayah",
   },
   product_development_and_engineering: {
     displayName: "Product Development and Engineering",
-    owner: "Noor",
+    owner: "Sara",
     channel: "#product-development-engineering",
-    rule: "product development and engineering -> Noor",
+    rule: "product development and engineering -> Sara",
   },
   legal_privacy_and_compliance: {
     displayName: "Legal, Privacy and Compliance",
-    owner: "Huda",
+    owner: "Alex",
     channel: "#legal-privacy-compliance",
-    rule: "legal, privacy and compliance -> Huda",
+    rule: "legal, privacy and compliance -> Alex",
   },
   unresolved: {
     displayName: "Unresolved",

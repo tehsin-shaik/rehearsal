@@ -31,7 +31,7 @@ The verifier installs a global fetch guard and fails on any Demo Mode network at
 - confidence increases while the varied second observation develops;
 - two traces produce a generalized pattern;
 - customer and owner values are runtime variables;
-- Billing routes to Awaiz;
+- Billing routes to Tehsin;
 - Preview Run values contain no unresolved placeholders;
 - unapproved execution is rejected;
 - approved execution creates one issue and sends one notification and one reply;

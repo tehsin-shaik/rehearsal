@@ -136,13 +136,13 @@ test("billing resolves routed values and meaningful adaptations", () => {
   );
 
   assert.equal(run.resolvedValues.department, "billing");
-  assert.equal(run.resolvedValues.owner, "Awaiz");
-  assert.equal(run.resolvedValues.teamChannel, "billing-finance");
+  assert.equal(run.resolvedValues.owner, "Tehsin");
+  assert.equal(run.resolvedValues.teamChannel, "#billing-finance");
   assert.equal(department?.observedValue, "Technical Support");
   assert.equal(department?.adaptedValue, "Billing");
-  assert.equal(owner?.observedValue, "Umar");
-  assert.equal(owner?.adaptedValue, "Awaiz");
-  assert.equal(owner?.rule, "billing -> Awaiz");
+  assert.equal(owner?.observedValue, "Elyes");
+  assert.equal(owner?.adaptedValue, "Tehsin");
+  assert.equal(owner?.rule, "billing -> Tehsin");
   assert.deepEqual(
     run.adaptations.map((adaptation) => adaptation.field),
     ["department", "owner"],
@@ -153,7 +153,7 @@ test("planning composes informative drafts without claiming resolution", () => {
   const run = billingRun();
 
   assert.match(run.resolvedValues.teamNotification, /Leila Haddad/);
-  assert.match(run.resolvedValues.teamNotification, /Awaiz/);
+  assert.match(run.resolvedValues.teamNotification, /Tehsin/);
   assert.match(run.resolvedValues.teamNotification, /SUP-2042/);
   assert.match(
     run.resolvedValues.teamNotification,
@@ -212,14 +212,14 @@ test("ambiguous input requires owner review and is not executable", () => {
 
 test("a human owner override resolves review and updates dependent drafts", () => {
   const pendingRun = ambiguousRun();
-  const updatedRun = applyOwnerOverride(pendingRun, "Huda", "reviewer-001");
+  const updatedRun = applyOwnerOverride(pendingRun, "Alex", "reviewer-001");
   const ownerAction = updatedRun.plannedActions.find(
     (action) => action.action === "assign_owner",
   );
 
   assert.equal(updatedRun.understanding.issue.department, "unresolved");
   assert.equal(updatedRun.status, "preview");
-  assert.equal(updatedRun.resolvedValues.owner, "Huda");
+  assert.equal(updatedRun.resolvedValues.owner, "Alex");
   assert.equal(updatedRun.resolvedValues.ownerSource, "human");
   assert.equal(
     updatedRun.resolvedValues.department,
@@ -229,7 +229,7 @@ test("a human owner override resolves review and updates dependent drafts", () =
   assert.equal(updatedRun.resolutionErrors.length, 0);
   assert.equal(ownerAction?.status, "planned");
   assert.equal(ownerAction?.review, undefined);
-  assert.equal(ownerAction?.resolvedInput.owner, "Huda");
+  assert.equal(ownerAction?.resolvedInput.owner, "Alex");
   assert.notEqual(
     updatedRun.resolvedValues.teamNotification,
     pendingRun.resolvedValues.teamNotification,
@@ -238,7 +238,7 @@ test("a human owner override resolves review and updates dependent drafts", () =
     updatedRun.resolvedValues.customerReply,
     pendingRun.resolvedValues.customerReply,
   );
-  assert.match(updatedRun.resolvedValues.teamNotification, /Huda/);
+  assert.match(updatedRun.resolvedValues.teamNotification, /Alex/);
   assert.match(updatedRun.resolvedValues.customerReply, /Legal/);
   assert.equal(
     updatedRun.plannedActions.find(
@@ -255,7 +255,7 @@ test("a human owner override resolves review and updates dependent drafts", () =
   assert.deepEqual(updatedRun.humanSelections, [
     {
       field: "owner",
-      value: "Huda",
+      value: "Alex",
       selectedBy: "reviewer-001",
       rule: "human selection",
     },

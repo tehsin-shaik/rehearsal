@@ -24,7 +24,7 @@ test("all canonical fixtures receive deterministic understanding", () => {
       category: "authentication",
       department: "technical_support",
       severity: "high",
-      owner: "Umar",
+      owner: "Elyes",
       reviewRequired: false,
     },
     {
@@ -32,7 +32,7 @@ test("all canonical fixtures receive deterministic understanding", () => {
       category: "performance",
       department: "technical_support",
       severity: "high",
-      owner: "Umar",
+      owner: "Elyes",
       reviewRequired: false,
     },
     {
@@ -40,7 +40,7 @@ test("all canonical fixtures receive deterministic understanding", () => {
       category: "data",
       department: "billing",
       severity: "medium",
-      owner: "Awaiz",
+      owner: "Tehsin",
       reviewRequired: false,
     },
     {
@@ -145,12 +145,12 @@ test("ambiguous and unknown text returns unresolved without an owner", () => {
 
 test("typed routing resolves every required department and channel", () => {
   const expectedOwners: Readonly<Record<Department, string | null>> = {
-    billing: "Awaiz",
-    technical_support: "Umar",
-    sales: "Bilal",
-    logistics: "Obaid",
-    product_development_and_engineering: "Noor",
-    legal_privacy_and_compliance: "Huda",
+    billing: "Tehsin",
+    technical_support: "Elyes",
+    sales: "Raghad",
+    logistics: "Ayah",
+    product_development_and_engineering: "Sara",
+    legal_privacy_and_compliance: "Alex",
     unresolved: null,
   };
   const channels = new Set<string>();
@@ -163,7 +163,7 @@ test("typed routing resolves every required department and channel", () => {
   }
 
   assert.equal(channels.size, DEPARTMENTS.length);
-  assert.equal(routeDepartment("billing").rule, "billing -> Awaiz");
+  assert.equal(routeDepartment("billing").rule, "billing -> Tehsin");
   assert.deepEqual(routeDepartment("unresolved"), {
     department: "unresolved",
     departmentName: "Unresolved",

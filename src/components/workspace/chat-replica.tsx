@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import {
   useRehearsalApplication,
   useRehearsalState,
@@ -19,6 +21,7 @@ function compactTime(timestamp: string): string {
 }
 
 export function ChatReplica() {
+  const [sending, setSending] = useState(false);
   const { commands } = useRehearsalApplication();
   const workspace = useRehearsalState((state) => state.workspace);
   const integration = useRehearsalState((state) => state.integration);
@@ -98,10 +101,23 @@ export function ChatReplica() {
               <GuideRing active={phase === "observing"}>
                 <Button
                   compact
-                  onClick={() => commands.sendNotificationManually()}
+                  disabled={sending}
+                  onClick={async () => {
+                    setSending(true);
+                    try {
+                      await commands.sendNotificationManually();
+                    } finally {
+                      setSending(false);
+                    }
+                  }}
                   variant="primary"
                 >
-                  <Icon name="send" size={11} /> Send
+                  <Icon name="send" size={11} />
+                  {sending
+                    ? "Sending..."
+                    : integration.mode === "live"
+                      ? "Send to Slack"
+                      : "Send"}
                 </Button>
               </GuideRing>
             ) : (

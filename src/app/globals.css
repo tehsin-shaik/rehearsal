@@ -46,6 +46,9 @@
   --font-sans:
     ui-sans-serif, system-ui, -apple-system, "Segoe UI Variable Display",
     "Segoe UI", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display:
+    "Segoe UI Variable Display", "SF Pro Display", Inter, ui-sans-serif,
+    system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono:
     ui-monospace, "JetBrains Mono", SFMono-Regular, "Cascadia Code", Consolas,
     Menlo, monospace;
@@ -891,6 +894,7 @@ kbd {
 }
 .hero h1 {
   color: var(--mist-50);
+  font-family: var(--font-display);
   font-size: clamp(3.25rem, 6.2vw, 4.25rem);
   font-weight: 610;
   letter-spacing: -0.055em;
@@ -982,6 +986,7 @@ kbd {
 .benefit-card h2 {
   margin-bottom: 7px;
   color: var(--mist-100);
+  font-family: var(--font-display);
   font-size: 14px;
   font-weight: 620;
 }

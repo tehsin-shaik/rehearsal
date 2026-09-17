@@ -156,7 +156,7 @@ test("compiled workflow steps never memorize observed people", () => {
     "Priya Raman",
     "Maya Chen",
     "Noah Williams",
-    "Umar",
+    "Elyes",
   ]) {
     assert.equal(serializedSteps.includes(observedName), false);
   }

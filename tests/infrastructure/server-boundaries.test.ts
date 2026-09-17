@@ -57,7 +57,7 @@ function validModelUnderstanding(): ModelIssueUnderstanding {
       ...deterministic.issue,
       labels: [...deterministic.issue.labels],
     },
-    owner: "Awaiz",
+    owner: "Tehsin",
     evidence: deterministic.evidence.map((entry) => ({ ...entry })),
     confidence: deterministic.confidence,
     reviewRequired: false,
@@ -82,6 +82,12 @@ test("server environment defaults to safe offline mode", () => {
   assert.equal(environment.COPILOTKIT_TELEMETRY_DISABLED, true);
 });
 
+test("a blank tracker selection is treated as unset", () => {
+  const environment = readServerEnvironment({ TRACKER: "   " });
+
+  assert.equal(environment.TRACKER, undefined);
+});
+
 test("valid literal model understanding is accepted", async () => {
   const result = await understandReportWithModel(
     duplicateBillingChargeReport,
@@ -91,7 +97,7 @@ test("valid literal model understanding is accepted", async () => {
   assert.equal(result.provenance.source, "model");
   assert.equal(result.provenance.fallbackReason, null);
   assert.equal(result.understanding.issue.department, "billing");
-  assert.equal(result.understanding.owner, "Awaiz");
+  assert.equal(result.understanding.owner, "Tehsin");
 });
 
 test("one invalid evidence phrase rejects the complete model result", async () => {
@@ -289,7 +295,7 @@ test("preview agent streams action proposals and one complete run proposal", asy
     JSON.parse(proposedRunArguments.delta) as unknown,
   );
   assert.equal(proposedRun.plannedActions.length, 10);
-  assert.equal(proposedRun.resolvedValues.owner, "Awaiz");
+  assert.equal(proposedRun.resolvedValues.owner, "Tehsin");
 });
 
 test("AG-UI run proposals reject incomplete payloads", () => {

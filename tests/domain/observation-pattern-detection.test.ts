@@ -365,7 +365,7 @@ test("live confidence increases as a matching trace progresses", () => {
     sourceApplication: "issue_tracker",
     action: "assign_owner",
     intent: "Assign the routed issue owner",
-    payload: { department: "billing", owner: "Awaiz" },
+    payload: { department: "billing", owner: "Tehsin" },
   });
   builder.append({
     occurredAt: "2026-02-03T08:03:00.000Z",

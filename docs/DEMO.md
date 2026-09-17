@@ -17,7 +17,7 @@ Open `http://localhost:3000/workspace`. Demo Mode is the default and needs no `.
 4. Open the memory map and inspect generalized customer, issue, department, and owner values.
 5. Activate the workflow deliberately.
 6. Deliver the unseen duplicate-billing report.
-7. Inspect the Preview Run. Confirm Billing routes to Awaiz, every proposed action is resolved, and the interface states that no external changes have been made.
+7. Inspect the Preview Run. Confirm Billing routes to Tehsin, every proposed action is resolved, and the interface states that no external changes have been made.
 8. Approve and execute. Confirm one issue, one assignment, one team notification, one customer reply, verification, and savings.
 
 ## Failure and Retry

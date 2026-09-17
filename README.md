@@ -24,7 +24,7 @@ Open `http://localhost:3000/workspace`. No `.env` file is needed for Demo Mode.
 1. Run the first support-triage observation. One trace remains insufficient.
 2. Run the varied second observation. Rehearsal detects and compiles a pattern.
 3. Inspect and activate the learned workflow.
-4. Deliver the unseen billing report. The Preview Run resolves Billing and Awaiz.
+4. Deliver the unseen billing report. The Preview Run resolves Billing and Tehsin.
 5. Review every action, permission, adaptation, evidence item, and target.
 6. Approve once. Adapter-confirmed execution creates one issue, assigns it, sends one team notification, and replies to the customer.
 7. Use the failure control to verify safe stop-and-resume behavior without duplicate issue creation.

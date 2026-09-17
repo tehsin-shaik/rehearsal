@@ -10,6 +10,7 @@ import type {
 } from "../../src/infrastructure/adapters/contracts.ts";
 import { createLiveAdapterSelection } from "../../src/infrastructure/adapters/live/adapter-factory.ts";
 import { AmbiguousIssueTrackerAdapter } from "../../src/infrastructure/adapters/live/ambiguous-adapter.ts";
+import { ClickUpIssueTrackerAdapter } from "../../src/infrastructure/adapters/live/clickup-adapter.ts";
 import { SlackMessagingAdapter } from "../../src/infrastructure/adapters/live/slack-adapter.ts";
 import {
   authorizeRemoteAction,
@@ -115,6 +116,39 @@ test("Slack webhook success requires Slack's exact confirmation", async () => {
   assert.equal(confirmed.status, "succeeded");
 });
 
+test("ClickUp member IDs resolve to Rehearsal owner names", async () => {
+  const adapter = new ClickUpIssueTrackerAdapter({
+    apiKey: "clickup-test-key",
+    listId: "123",
+    assignees: JSON.stringify({ Tehsin: "42" }),
+    fetchImplementation: async () =>
+      new Response(
+        JSON.stringify({
+          tasks: [
+            {
+              id: "task-42",
+              name: "Duplicate billing charge",
+              url: "https://app.clickup.test/t/task-42",
+              tags: [{ name: "billing" }],
+              assignees: [
+                {
+                  id: 42,
+                  username: "tehsin.workspace",
+                  email: "tehsin@example.test",
+                },
+              ],
+            },
+          ],
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      ),
+  });
+
+  const issues = await adapter.listRecentIssues();
+
+  assert.equal(issues[0]?.owner, "Tehsin");
+});
+
 test("Ambiguous owner assignment requires matching read-back evidence", async () => {
   const adapter = new AmbiguousIssueTrackerAdapter({
     baseUrl: "https://ambiguous.example.test",
@@ -127,8 +161,8 @@ test("Ambiguous owner assignment requires matching read-back evidence", async ()
           : {
               id: "task-42",
               title: "Duplicate charge",
-              owner: "Umar",
-              metadata: { routed_owner: "Umar" },
+              owner: "Elyes",
+              metadata: { routed_owner: "Elyes" },
             };
       return new Response(JSON.stringify(body), {
         status: 200,
@@ -147,7 +181,7 @@ test("Ambiguous owner assignment requires matching read-back evidence", async ()
       number: "task-42",
       url: "https://ambiguous.example.test/tasks/task-42",
     },
-    owner: "Awaiz",
+    owner: "Tehsin",
   });
 
   assert.equal(result.ok, false);

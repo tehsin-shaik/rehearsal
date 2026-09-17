@@ -40,7 +40,7 @@ The local prototype stores OAuth access and refresh tokens in `.rehearsal/gmail-
 - `CLICKUP_API_KEY` — token for a dedicated integration identity.
 - `CLICKUP_LIST_ID` — exact destination list.
 - `CLICKUP_TEAM_ID` — optional workspace restriction for member lookup.
-- `CLICKUP_ASSIGNEES` — optional owner-name to member-ID mapping.
+- `CLICKUP_ASSIGNEES` — optional owner-name to member-ID mapping for Tehsin, Elyes, Raghad, Ayah, Sara, and Alex.
 
 Limit access to the intended workspace and list.
 
@@ -65,7 +65,7 @@ Limit the token to that repository with Issues read/write access. Do not use a b
 - `SLACK_BOT_TOKEN` — optional bot token for mapped channels.
 - `NEXT_PUBLIC_SLACK_AREA_CHANNELS` — department-to-channel mapping; do not place tokens or private message content in it.
 
-Prefer a single-purpose webhook. If using a bot, grant only message-posting access to required channels.
+Prefer a bot with `chat:write` for multi-channel routing and invite it only to the seven documented support channels. Use a single-purpose webhook only when all notifications should go to one fixed channel.
 
 ## Ambiguous
 

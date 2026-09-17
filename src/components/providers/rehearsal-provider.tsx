@@ -19,6 +19,7 @@ import {
   createHttpExecutionAdapterBundle,
   loadLiveSurfaces,
   planPreviewRunWithAgUi,
+  sendConfirmedTeamMessage,
   understandReportLive,
 } from "../../infrastructure/client/index.ts";
 
@@ -65,6 +66,7 @@ export function RehearsalProvider({
         : {
             understandReport: understandReportLive,
             planRun: planPreviewRunWithAgUi,
+            sendManualTeamMessage: sendConfirmedTeamMessage,
             refreshSurfaces: () =>
               loadLiveSurfaces(
                 applicationRef.current?.store.getState().integration

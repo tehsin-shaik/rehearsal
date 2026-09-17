@@ -80,7 +80,7 @@ export function createDemoDirector(
     async deliverAmbiguousReport() {
       await commands.deliverFixtureReport("ambiguous");
     },
-    resolveAmbiguousOwner(owner = "Umar") {
+    resolveAmbiguousOwner(owner = "Elyes") {
       return commands.resolveOwnerReview(owner, "demo-reviewer");
     },
     retryFailedRun: commands.retryFailedRun,

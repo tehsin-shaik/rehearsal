@@ -49,9 +49,15 @@ export const serverEnvironmentSchema = z
     AMBIGUOUS_API_KEY: optionalString,
     AMBIGUOUS_BASE_URL: optionalString,
     AMBIGUOUS_CHANNEL_ID: optionalString,
-    TRACKER: z
-      .enum(["clickup", "jira", "ambiguous", "ambiguous_sandbox", "github"])
-      .optional(),
+    TRACKER: z.preprocess(
+      (value) =>
+        typeof value === "string" && value.trim().length === 0
+          ? undefined
+          : value,
+      z
+        .enum(["clickup", "jira", "ambiguous", "ambiguous_sandbox", "github"])
+        .optional(),
+    ),
     GITHUB_TOKEN: optionalString,
     GITHUB_REPO: optionalString,
     SLACK_WEBHOOK_URL: optionalString,

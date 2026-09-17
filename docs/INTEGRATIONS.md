@@ -45,6 +45,14 @@ Optional: `CLICKUP_TEAM_ID`, `CLICKUP_ASSIGNEES`.
 
 The adapter creates a task in the configured list, uses Markdown content with up to three research references, applies tags and mapped priority, resolves owners from configured identifiers or authorized workspace members, assigns the owner, and lists recent tasks. `CLICKUP_ASSIGNEES` accepts JSON or comma-separated `Name=memberId` pairs.
 
+Add Tehsin, Elyes, Raghad, Ayah, Sara, and Alex to the destination Workspace and give them access to the configured List. Explicit member-ID mappings are recommended because display names and email prefixes can change:
+
+```text
+CLICKUP_ASSIGNEES='{"Tehsin":"123","Elyes":"456","Raghad":"789","Ayah":"101","Sara":"112","Alex":"131"}'
+```
+
+Use real ClickUp member IDs from the authorized Workspace response. Do not use the example values above.
+
 ## Jira Cloud
 
 Required: `JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`, `JIRA_PROJECT_KEY`.
@@ -70,6 +78,58 @@ Disposable sandbox mode requires `AMBIGUOUS_SANDBOX=true` and `AMBIGUOUS_BASE_UR
 Configure `SLACK_WEBHOOK_URL` or `SLACK_BOT_TOKEN`. A bot token takes precedence when both are present. `NEXT_PUBLIC_SLACK_AREA_CHANNELS` maps semantic department channels to Slack channel identifiers using JSON or comma-separated `source=destination` pairs.
 
 Webhook delivery succeeds only when Slack returns a successful HTTP response whose body is exactly `ok`. Bot delivery succeeds only when Slack returns `ok: true` and a message timestamp.
+
+### Recommended channels
+
+Create these channels before connecting Slack so every deterministic route has a destination:
+
+| Channel                            | Owner  | Purpose                                      |
+| ---------------------------------- | ------ | -------------------------------------------- |
+| `#technical-support`               | Elyes  | Authentication, API, and performance reports |
+| `#billing-finance`                 | Tehsin | Charges, invoices, and refunds               |
+| `#sales-support`                   | Raghad | Sales and pre-sales questions                |
+| `#logistics-support`               | Ayah   | Delivery and fulfillment reports             |
+| `#product-development-engineering` | Sara   | Product defects and engineering escalations  |
+| `#legal-privacy-compliance`        | Alex   | Legal, privacy, and compliance review        |
+| `#support-review`                  | Human  | Ambiguous reports requiring manual routing   |
+
+Public channels are simplest for a prototype. Use private channels for sensitive work only when the Rehearsal app and the appropriate team members are explicitly invited.
+
+### Connect a Slack workspace
+
+For multi-channel routing, use a bot token rather than one incoming webhook:
+
+1. Create a Slack app in the target workspace and add the bot scope `chat:write`.
+2. Install the app and copy its Bot User OAuth Token, which starts with `xoxb-`.
+3. Invite the app to every destination channel. Avoid `chat:write.public` unless posting without channel membership is intentional.
+4. Open each channel in Slack's web client and copy the `C...` channel identifier from its URL.
+5. Configure `.env.local` with the token and channel map, then restart Rehearsal.
+
+```text
+DEMO_MODE=false
+NEXT_PUBLIC_DEMO_MODE=false
+SLACK_BOT_TOKEN=xoxb-replace-me
+NEXT_PUBLIC_SLACK_AREA_CHANNELS='{"technical-support":"C_TECH","billing-finance":"C_BILLING","sales-support":"C_SALES","logistics-support":"C_LOGISTICS","product-development-engineering":"C_PRODUCT","legal-privacy-compliance":"C_LEGAL","support-review":"C_REVIEW"}'
+```
+
+Replace every placeholder with the real value. Keep `SLACK_BOT_TOKEN` server-side and never commit `.env.local`. Owner names are included in notification text; the current adapter does not convert them into Slack `@mentions`.
+
+The workspace composer remains local in Demo Mode. In Live Mode its button is labeled **Send to Slack**, calls the configured server-side Slack adapter, and adds the message to the workspace only after Slack confirms delivery. Autonomous workflow notifications remain blocked behind Preview Run approval.
+
+An incoming webhook is acceptable for one fixed destination only. A Slack app webhook is bound to the channel selected during installation, so the area-channel map cannot reroute that webhook at runtime.
+
+### Delayed webhook delivery
+
+`Webhook delivery intermittently delayed` is seeded demonstration data in Demo Mode, not evidence of a live integration failure. For a real delay:
+
+1. Keep sends at or below one message per second per channel.
+2. On HTTP `429`, wait for Slack's `Retry-After` duration before retrying.
+3. Retry network errors and HTTP `5xx` responses with bounded exponential backoff; do not retry permanent `4xx` permission, archived-channel, or revoked-webhook errors.
+4. Record the action ID, destination channel ID, response status, duration, and returned message timestamp without logging tokens or webhook URLs.
+5. Prefer bot delivery for multi-channel workflows because a successful response includes a message timestamp that can be used as delivery evidence.
+6. Check Slack service status and run `auth.test` when bot authentication or workspace availability is uncertain.
+
+Rehearsal currently times out a Slack request after eight seconds and marks transient failures retryable. The approved run can then resume from the failed notification action without recreating an already confirmed ClickUp task.
 
 ## Gmail IMAP
 

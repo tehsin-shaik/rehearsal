@@ -21,9 +21,29 @@ export const DEFAULT_TEAM_CHANNELS: readonly TeamChannel[] = [
     description: "Authentication, performance, and API reports",
   },
   {
-    id: "billing-finance",
+    id: "#billing-finance",
     label: "billing-finance",
     description: "Billing and invoice operations",
+  },
+  {
+    id: "#sales-support",
+    label: "sales-support",
+    description: "Sales questions and pre-sales support",
+  },
+  {
+    id: "#logistics-support",
+    label: "logistics-support",
+    description: "Delivery and fulfillment reports",
+  },
+  {
+    id: "#product-development-engineering",
+    label: "product-development-engineering",
+    description: "Product defects and engineering escalations",
+  },
+  {
+    id: "#legal-privacy-compliance",
+    label: "legal-privacy-compliance",
+    description: "Legal, privacy, and compliance review",
   },
   {
     id: "#support-review",
@@ -49,7 +69,7 @@ export function createInitialWorkspaceSlice(): WorkspaceSlice {
         description: "Existing demonstration issue.",
         labels: ["support", "performance"],
         priority: "medium",
-        owner: "Umar",
+        owner: "Elyes",
         state: "in_progress",
         createdAt: "2026-01-04T14:20:00.000Z",
         source: "existing",
@@ -61,7 +81,7 @@ export function createInitialWorkspaceSlice(): WorkspaceSlice {
       {
         id: "existing-message-001",
         channel: "#technical-support",
-        author: "Umar",
+        author: "Elyes",
         message: "Morning queue review is complete.",
         sentAt: "2026-01-05T08:30:00.000Z",
         source: "existing",

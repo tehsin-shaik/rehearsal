@@ -175,3 +175,11 @@ export function createHttpExecutionAdapterBundle(
     customerMail: new HttpCustomerMailAdapter(options),
   };
 }
+
+export function sendConfirmedTeamMessage(input: TeamMessageInput) {
+  return executeThroughServer<MessageDeliveryResultData>(
+    "send_team_notification",
+    input,
+    `manual:${input.actionId}`,
+  );
+}

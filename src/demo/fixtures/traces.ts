@@ -73,7 +73,7 @@ function buildSupportTriageTrace(
     sourceApplication: "issue_tracker",
     action: "assign_owner",
     intent: "Assign the routed issue owner",
-    payload: { department: "technical_support", owner: "Umar" },
+    payload: { department: "technical_support", owner: "Elyes" },
     estimatedEffortSeconds: 30,
   });
 
@@ -85,7 +85,7 @@ function buildSupportTriageTrace(
     payload: {
       channel: "#technical-support",
       department: "technical_support",
-      owner: "Umar",
+      owner: "Elyes",
     },
     estimatedEffortSeconds: 45,
   });

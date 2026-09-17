@@ -98,6 +98,98 @@ test("reading the selected report twice keeps semantic event keys unique", () =>
   );
 });
 
+test("the Demo Mode composer sends only to the local replica", async () => {
+  const application = testApplication();
+  application.commands.readMail("report-login-001");
+  application.commands.populateIssueFields();
+  application.commands.draftNotification("Replica-only team message.");
+
+  await application.commands.sendNotificationManually();
+
+  const state = application.store.getState();
+  const message = state.workspace.teamMessages.at(-1);
+  assert.equal(message?.message, "Replica-only team message.");
+  assert.equal(message?.source, "manual");
+  assert.equal(state.workspace.teamMessageDraft, "");
+});
+
+test("the Live Mode composer waits for confirmed Slack delivery", async () => {
+  let deliveredChannel: string | null = null;
+  let deliveredMessage: string | null = null;
+  const application = createRehearsalApplication({
+    mode: "live",
+    timing: TEST_PRESENTATION_TIMING,
+    now: () => "2026-01-10T10:00:00.000Z",
+    sendManualTeamMessage: async (input) => {
+      deliveredChannel = input.channel;
+      deliveredMessage = input.message;
+      return {
+        actionId: input.actionId,
+        idempotencyKey: input.idempotencyKey,
+        status: "succeeded",
+        ok: true,
+        summary: `Sent a Slack message to ${input.channel}.`,
+        data: {
+          deliveryId: "1700000000.000001",
+          destination: input.channel,
+        },
+        adapter: "slack",
+        durationMs: 1,
+        attemptedAt: input.attemptedAt,
+        completedAt: "2026-01-10T10:00:00.001Z",
+      };
+    },
+  });
+  application.commands.readMail("report-login-001");
+  application.commands.populateIssueFields();
+  application.commands.draftNotification("Confirmed live team message.");
+
+  await application.commands.sendNotificationManually();
+
+  const state = application.store.getState();
+  assert.equal(deliveredChannel, "#technical-support");
+  assert.equal(deliveredMessage, "Confirmed live team message.");
+  assert.equal(state.workspace.teamMessages.at(-1)?.source, "live");
+  assert.equal(state.workspace.teamMessageDraft, "");
+  assert.equal(state.presentation.banner?.title, "Slack message sent");
+});
+
+test("a failed live composer send keeps the draft for retry", async () => {
+  const application = createRehearsalApplication({
+    mode: "live",
+    timing: TEST_PRESENTATION_TIMING,
+    now: () => "2026-01-10T10:05:00.000Z",
+    sendManualTeamMessage: async (input) => ({
+      actionId: input.actionId,
+      idempotencyKey: input.idempotencyKey,
+      status: "failed",
+      ok: false,
+      summary: "Slack rejected the message.",
+      adapter: "slack",
+      durationMs: 1,
+      attemptedAt: input.attemptedAt,
+      completedAt: "2026-01-10T10:05:00.001Z",
+      error: {
+        code: "slack_rejected_message",
+        message: "Slack rejected the message.",
+        retryable: false,
+      },
+    }),
+  });
+  application.commands.readMail("report-login-001");
+  application.commands.populateIssueFields();
+  application.commands.draftNotification("Keep this live draft.");
+  const initialMessageCount =
+    application.store.getState().workspace.teamMessages.length;
+
+  await application.commands.sendNotificationManually();
+
+  const state = application.store.getState();
+  assert.equal(state.workspace.teamMessages.length, initialMessageCount);
+  assert.equal(state.workspace.teamMessageDraft, "Keep this live draft.");
+  assert.equal(state.presentation.banner?.title, "Slack message not sent");
+});
+
 test("manual trace commands and instant demo controls produce the same pattern", async () => {
   const manual = testApplication();
   const directed = testApplication();
@@ -136,7 +228,7 @@ test("activation is deliberate and an active pattern handles a new trigger", asy
   const run = application.store.getState().engine.activeRun;
   assert.equal(application.store.getState().engine.phase, "preview_ready");
   assert.equal(run?.resolvedValues.department, "billing");
-  assert.equal(run?.resolvedValues.owner, "Awaiz");
+  assert.equal(run?.resolvedValues.owner, "Tehsin");
 });
 
 test("trigger re-entrancy keeps the existing unresolved run", async () => {
@@ -162,7 +254,7 @@ test("pending review blocks approval until a person selects an owner", async () 
   assert.equal(unchanged?.id, pendingRun?.id);
   assert.equal(application.store.getState().engine.phase, "needs_review");
   assert.equal(
-    application.director.resolveAmbiguousOwner("Huda")?.status,
+    application.director.resolveAmbiguousOwner("Alex")?.status,
     "preview_ready",
   );
   assert.equal(application.store.getState().engine.phase, "preview_ready");

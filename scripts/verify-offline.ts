@@ -63,7 +63,7 @@ async function verifySuccessfulRun(): Promise<void> {
   const proposedRun = application.store.getState().engine.activeRun;
   assert.ok(proposedRun !== null);
   assert.equal(proposedRun.resolvedValues.department, "billing");
-  assert.equal(proposedRun.resolvedValues.owner, "Awaiz");
+  assert.equal(proposedRun.resolvedValues.owner, "Tehsin");
   assert.equal(JSON.stringify(proposedRun).includes("{{"), false);
   await assert.rejects(
     executeAgentRun(

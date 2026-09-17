@@ -312,6 +312,7 @@ export function createApplicationCommands(
   let traceBuilder: SemanticTraceBuilder | null = null;
   let traceSequence = 0;
   let timelineSequence = 0;
+  let manualNotificationInFlight = false;
 
   function timelineEntry(
     kind: TimelineKind,
@@ -922,22 +923,111 @@ export function createApplicationCommands(
     }));
   }
 
-  function sendNotificationManually(): void {
+  async function sendNotificationManually(): Promise<void> {
     const state = store.getState();
-    if (state.workspace.teamMessageDraft.trim() === "") {
+    if (
+      state.workspace.teamMessageDraft.trim() === "" ||
+      manualNotificationInFlight
+    ) {
       return;
     }
 
     const sentAt = now();
+    const liveMode = state.integration.mode === "live";
     const message: WorkspaceTeamMessage = {
-      id: `manual-team-${String(state.workspace.teamMessages.length + 1).padStart(3, "0")}`,
+      id: `${liveMode ? "live" : "manual"}-team-${sentAt}-${String(state.workspace.teamMessages.length + 1).padStart(3, "0")}`,
       channel: state.workspace.activeChannel,
       author: "You",
       message: state.workspace.teamMessageDraft,
       sentAt,
-      source: "manual",
+      source: liveMode ? "live" : "manual",
     };
     const understanding = state.workspace.structuredUnderstanding;
+
+    if (liveMode) {
+      const sendManualTeamMessage = options.sendManualTeamMessage;
+      if (sendManualTeamMessage === undefined) {
+        store.setState((current) => ({
+          ...current,
+          presentation: {
+            ...current.presentation,
+            banner: {
+              tone: "rose",
+              title: "Slack message not sent",
+              detail: "Live team messaging is not configured.",
+            },
+          },
+        }));
+        appendTimeline(
+          "integration",
+          "Live team message was not sent.",
+          "Live team messaging is not configured.",
+        );
+        return;
+      }
+
+      manualNotificationInFlight = true;
+      try {
+        const result = await sendManualTeamMessage({
+          actionId: message.id,
+          idempotencyKey: `manual-send:${message.id}`,
+          attemptedAt: sentAt,
+          channel: message.channel,
+          message: message.message,
+        });
+        if (!result.ok) {
+          const detail = result.error?.message ?? result.summary;
+          store.setState((current) => ({
+            ...current,
+            presentation: {
+              ...current.presentation,
+              banner: {
+                tone: "rose",
+                title: "Slack message not sent",
+                detail,
+              },
+            },
+          }));
+          appendTimeline("integration", "Live team message failed.", detail);
+          return;
+        }
+
+        store.setState((current) => ({
+          ...current,
+          presentation: {
+            ...current.presentation,
+            banner: {
+              tone: "teal",
+              title: "Slack message sent",
+              detail: result.summary,
+            },
+          },
+        }));
+        appendTimeline(
+          "integration",
+          "Sent a live team message.",
+          result.summary,
+        );
+      } catch {
+        const detail = "The Rehearsal server did not confirm Slack delivery.";
+        store.setState((current) => ({
+          ...current,
+          presentation: {
+            ...current.presentation,
+            banner: {
+              tone: "rose",
+              title: "Slack message not sent",
+              detail,
+            },
+          },
+        }));
+        appendTimeline("integration", "Live team message failed.", detail);
+        return;
+      } finally {
+        manualNotificationInFlight = false;
+      }
+    }
+
     store.setState((current) => ({
       ...current,
       workspace: {
@@ -945,7 +1035,10 @@ export function createApplicationCommands(
         teamMessages: [...current.workspace.teamMessages, message].slice(
           -MAX_TEAM_MESSAGES,
         ),
-        teamMessageDraft: "",
+        teamMessageDraft:
+          current.workspace.teamMessageDraft === message.message
+            ? ""
+            : current.workspace.teamMessageDraft,
       },
     }));
     observeSemanticAction({

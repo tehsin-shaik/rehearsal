@@ -91,7 +91,7 @@ The product will ship with three replica work surfaces: Mail, Issue Tracker, and
 4. Rehearsal detects the repeated pattern and shows its confidence and evidence.
 5. The user inspects and activates the learned workflow.
 6. A third, unseen billing report arrives.
-7. Rehearsal classifies the report, adapts the department from technical support to billing, and routes ownership from Umar to Awaiz.
+7. Rehearsal classifies the report, adapts the department from technical support to billing, and routes ownership from Elyes to Tehsin.
 8. A Preview Run shows every proposed action, resolved value, permission, risk, and destination.
 9. Nothing external changes until the user approves the run.
 10. After approval, the run creates and assigns the issue, drafts and sends the team notification, and replies to the customer.
@@ -330,7 +330,7 @@ The MVP is complete when all of the following are true:
 1. One completed trace does not create a pattern.
 2. Two similar traces with a small sequence variation create a pattern above the configured threshold.
 3. The compiler produces a five-stage workflow and does not memorize customer or owner names.
-4. A new billing report is classified as billing and assigned to Awaiz through the routing rule.
+4. A new billing report is classified as billing and assigned to Tehsin through the routing rule.
 5. The Preview Run contains no unresolved variable placeholders.
 6. An unapproved external creation or message is blocked.
 7. Payment is blocked even when a run is approved.
@@ -389,7 +389,7 @@ build trace 1
 -> build varied trace 2
 -> detect and compile pattern
 -> plan unseen billing report
--> confirm owner adapts to Awaiz
+-> confirm owner adapts to Tehsin
 -> confirm execution is blocked without approval
 -> approve and execute with in-memory adapters
 -> verify one issue and one notification

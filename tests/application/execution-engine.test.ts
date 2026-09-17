@@ -95,7 +95,7 @@ test("approved execution completes every action and confirmed side effect", asyn
   );
   assert.deepEqual(progressStatuses, Array(10).fill("running"));
   assert.equal(harness.state.issues.length, 1);
-  assert.equal(harness.state.issues[0]?.owner, "Awaiz");
+  assert.equal(harness.state.issues[0]?.owner, "Tehsin");
   assert.equal(harness.state.teamMessages.length, 1);
   assert.equal(harness.state.customerReplies.length, 1);
   assert.equal(verifyAgentRun(completedRun).ok, true);
